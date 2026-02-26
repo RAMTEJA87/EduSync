@@ -24,4 +24,8 @@ const QuizResultSchema = new mongoose.Schema({
     ]
 }, { timestamps: true });
 
+// Performance indexes
+QuizResultSchema.index({ studentId: 1, createdAt: -1 });
+QuizResultSchema.index({ quizId: 1 });
+
 export default mongoose.model('QuizResult', QuizResultSchema);

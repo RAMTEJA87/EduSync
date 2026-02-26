@@ -5,3 +5,6 @@ node_modules
 *.log
 uploads/
 .DS_Store
+server/ml/model/*.bin
+server/ml/model/model.json
+server/ml/model/metadata.json

@@ -3,6 +3,7 @@ import { buildRecommendationPrompt } from './ai/promptTemplates.js';
 import User from '../models/User.js';
 import QuizResult from '../models/QuizResult.js';
 import Material from '../models/Material.js';
+import { predictRisk } from '../ml/inferenceService.js';
 
 // ─── Default Fallback ─────────────────────────────────────────────
 const FALLBACK_RESPONSE = {
@@ -13,11 +14,40 @@ const FALLBACK_RESPONSE = {
 };
 
 /**
- * Gather student profile data for recommendations.
+ * Risk-based personalization parameters.
+ * Controls quiz difficulty, revision intensity, and notification urgency
+ * based on ML-predicted risk level.
+ */
+const RISK_PERSONALIZATION = {
+  HIGH: {
+    quizDifficulty: 'easy',
+    revisionIntensity: 'high',
+    notificationUrgency: 'high',
+    studyPlanDetail: 'detailed step-by-step with frequent checkpoints',
+    questionStyle: 'foundational and confidence-building',
+  },
+  MEDIUM: {
+    quizDifficulty: 'medium',
+    revisionIntensity: 'moderate',
+    notificationUrgency: 'moderate',
+    studyPlanDetail: 'balanced with moderate practice',
+    questionStyle: 'mixed difficulty with some challenging problems',
+  },
+  LOW: {
+    quizDifficulty: 'hard',
+    revisionIntensity: 'light',
+    notificationUrgency: 'low',
+    studyPlanDetail: 'advanced application and exploration focused',
+    questionStyle: 'advanced application and critical thinking',
+  },
+};
+
+/**
+ * Gather student profile data for recommendations, enriched with ML prediction.
  */
 const gatherStudentProfile = async (userId) => {
   const user = await User.findById(userId)
-    .select('weakTopics overallRiskLevel academicContext')
+    .select('weakTopics overallRiskLevel academicContext lastMLPrediction predictionConfidence')
     .lean();
 
   if (!user) {
@@ -49,17 +79,31 @@ const gatherStudentProfile = async (userId) => {
       .lean();
   }
 
+  // Get ML prediction for personalization (non-blocking)
+  let mlPrediction = null;
+  try {
+    mlPrediction = await predictRisk(userId);
+  } catch {
+    // ML unavailable, proceed with rule-based
+  }
+
+  const effectiveRiskLevel = mlPrediction?.predictedClass || user.overallRiskLevel || 'LOW';
+  const personalization = RISK_PERSONALIZATION[effectiveRiskLevel] || RISK_PERSONALIZATION.MEDIUM;
+
   return {
     weakTopics: user.weakTopics || [],
-    riskLevel: user.overallRiskLevel || 'LOW',
+    riskLevel: effectiveRiskLevel,
     recentScores,
     availableResources,
+    personalization,
+    mlConfidence: mlPrediction?.confidence || null,
   };
 };
 
 /**
  * Generate adaptive study recommendations for a student.
  * Analyzes weakTopics, quiz performance trends, risk level, and available materials.
+ * Recommendations are personalized based on ML risk prediction.
  * @param {string} userId
  */
 export const getAdaptiveRecommendations = async (userId) => {
@@ -73,6 +117,7 @@ export const getAdaptiveRecommendations = async (userId) => {
     weakTopicsCount: profile.weakTopics.length,
     riskLevel: profile.riskLevel,
     recentScoresCount: profile.recentScores.length,
+    personalization: profile.personalization.quizDifficulty,
   }));
 
   // If student has no data yet, return a tailored empty response
@@ -84,16 +129,18 @@ export const getAdaptiveRecommendations = async (userId) => {
         riskLevel: profile.riskLevel,
         dataAvailable: false,
         generatedAt: new Date().toISOString(),
+        personalization: profile.personalization,
       },
     };
   }
 
-  // Build prompt
+  // Build prompt with personalization context
   const prompt = buildRecommendationPrompt({
     weakTopics: profile.weakTopics,
     riskLevel: profile.riskLevel,
     recentScores: profile.recentScores,
     availableResources: profile.availableResources,
+    personalization: profile.personalization,
   });
 
   // Call Groq
@@ -125,6 +172,7 @@ export const getAdaptiveRecommendations = async (userId) => {
         riskLevel: profile.riskLevel,
         dataAvailable: true,
         generatedAt: new Date().toISOString(),
+        personalization: profile.personalization,
       },
     };
   }
@@ -141,6 +189,8 @@ export const getAdaptiveRecommendations = async (userId) => {
       recentScoresTrend: profile.recentScores.map(s => s.accuracy),
       dataAvailable: true,
       generatedAt: new Date().toISOString(),
+      personalization: profile.personalization,
+      mlConfidence: profile.mlConfidence,
     },
   };
 };
