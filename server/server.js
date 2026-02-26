@@ -59,6 +59,7 @@ import studentRoutes from './routes/studentRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
+import systemRoutes from './routes/systemRoutes.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
@@ -69,6 +70,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/system', systemRoutes);
 
 // Health check endpoint (used by deployment platforms)
 app.get('/', (req, res) => {

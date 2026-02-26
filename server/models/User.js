@@ -55,6 +55,15 @@ const UserSchema = new mongoose.Schema({
     integrityScore: { type: Number, default: 100, min: 0, max: 100 },
     totalViolations: { type: Number, default: 0 },
     suspiciousExamCount: { type: Number, default: 0 },
+
+    // ─── ML Prediction Fields ───────────────────────────────────
+    lastMLPrediction: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'] },
+    lastRulePrediction: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'] },
+    predictionConfidence: { type: Number, min: 0, max: 1 },
 }, { timestamps: true });
+
+// ─── Indexes for Performance Optimization ────────────────────────
+UserSchema.index({ role: 1 });
+UserSchema.index({ academicContext: 1 });
 
 export default mongoose.model('User', UserSchema);
