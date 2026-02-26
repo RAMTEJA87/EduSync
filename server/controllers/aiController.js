@@ -6,11 +6,13 @@ export const summarizeYoutube = async (req, res) => {
         const { url } = req.body;
         if (!url) return res.status(400).json({ message: "URL is required" });
 
+        if (!process.env.GROQ_API_KEY) {
+            console.error("GROQ_API_KEY is missing in environment variables!");
+            return res.status(500).json({ message: "AI API Key is not configured on the server." });
+        }
+
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-        // Mock extract transcript since we can't easily get the true transcript without youtube-transcript API
-        // For production, a youtube transcript extractor would be used.
-        // We will just prompt Groq to summarize the entity described in the URL (which usually works for popular videos)
         const prompt = `You are an AI educational assistant. Analyze this YouTube video URL: ${url}. 
         Provide a comprehensive summary of what the topic of this video likely represents, assuming it is an educational video.
         Respond STRICTLY in JSON with this format:
@@ -27,10 +29,14 @@ export const summarizeYoutube = async (req, res) => {
             response_format: { type: "json_object" }
         });
 
-        const rawJsonContent = response.choices[0]?.message?.content || '{}';
+        let rawJsonContent = response.choices[0]?.message?.content || '{}';
+
+        // Clean up markdown code blocks if the AI accidentally added them
+        rawJsonContent = rawJsonContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
         res.json(JSON.parse(rawJsonContent));
     } catch (error) {
-        console.error(error);
+        console.error("YouTube AI Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
