@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
-import { generateQuiz, getQuizForStudent, submitQuiz, deleteQuiz } from '../controllers/quizController.js';
 import { protect, roleGuard } from '../middleware/authMiddleware.js';
+import { uploadMaterial, getMaterialsByContext, deleteMaterial } from '../controllers/materialController.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -23,12 +23,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Teacher only
-router.post('/generate', protect, roleGuard('TEACHER', 'ADMIN'), upload.single('document'), generateQuiz);
-router.delete('/:id', protect, roleGuard('TEACHER', 'ADMIN'), deleteQuiz);
-
-// Student only
-router.get('/:id/attempt', protect, roleGuard('STUDENT'), getQuizForStudent);
-router.post('/:id/submit', protect, roleGuard('STUDENT'), submitQuiz);
+router.post('/upload', protect, roleGuard('TEACHER', 'ADMIN'), upload.single('document'), uploadMaterial);
+router.get('/context/:contextId', protect, getMaterialsByContext);
+router.delete('/:id', protect, roleGuard('TEACHER', 'ADMIN'), deleteMaterial);
 
 export default router;

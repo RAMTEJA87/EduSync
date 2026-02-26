@@ -28,7 +28,16 @@ const QuizSchema = new mongoose.Schema({
             topicTag: String,
             weight: { type: Number, default: 1 }
         }
-    ]
+    ],
+    targetAudience: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AcademicStructure'
+    },
+    status: {
+        type: String,
+        enum: ['DRAFT', 'PUBLISHED'],
+        default: 'PUBLISHED'
+    }
 }, { timestamps: true });
 
 export default mongoose.model('Quiz', QuizSchema);

@@ -4,6 +4,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
+import path from 'path';
 
 dotenv.config();
 
@@ -25,11 +26,25 @@ export const io = new Server(httpServer, {
 app.use(express.json());
 app.use(cors());
 
+// Make uploads folder publicly accessible
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // Routes
 import authRoutes from './routes/authRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import academicRoutes from './routes/academicRoutes.js';
+import materialRoutes from './routes/materialRoutes.js';
+import studentRoutes from './routes/studentRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/academic', academicRoutes);
+app.use('/api/materials', materialRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

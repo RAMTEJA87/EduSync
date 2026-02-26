@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import AcademicStructure from '../models/AcademicStructure.js';
 import generateToken from '../utils/jwt.js';
 import bcrypt from 'bcryptjs';
 
@@ -32,12 +33,23 @@ export const authUser = async (req, res) => {
 // @access  Public (Can be restricted later)
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, academicContextId } = req.body;
 
         const userExists = await User.findOne({ email });
 
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // If registering as a student, ensure academic structure exists
+        let structure = null;
+        const requestedRole = role || 'STUDENT';
+
+        if (requestedRole === 'STUDENT' && academicContextId) {
+            structure = await AcademicStructure.findById(academicContextId);
+            if (!structure) {
+                return res.status(404).json({ message: 'Academic structure not found' });
+            }
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -47,10 +59,16 @@ export const registerUser = async (req, res) => {
             name,
             email,
             passwordHash,
-            role: role || 'STUDENT',
+            role: requestedRole,
+            academicContext: structure ? structure._id : undefined
         });
 
         if (user) {
+            if (structure) {
+                structure.students.push(user._id);
+                await structure.save();
+            }
+
             res.status(201).json({
                 _id: user._id,
                 name: user.name,

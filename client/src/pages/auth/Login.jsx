@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, LogIn, Sparkles, User } from 'lucide-react';
@@ -10,13 +10,49 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('STUDENT');
+    const [contexts, setContexts] = useState([]);
+    const [academicContextId, setAcademicContextId] = useState('');
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        fetch('/api/academic/public')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setContexts(data);
+                }
+            })
+            .catch(err => console.error(err));
+    }, []);
+
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Simulate login based on role selector for now
-        if (role === 'STUDENT') navigate('/student/dashboard');
-        if (role === 'TEACHER') navigate('/teacher/dashboard');
-        if (role === 'ADMIN') navigate('/admin/dashboard');
+        try {
+            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+            const payload = isLogin ? { email, password } : { name, email, password, role, academicContextId };
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data));
+
+                const userRole = data.role || role;
+                if (userRole === 'STUDENT') navigate('/student/dashboard');
+                if (userRole === 'TEACHER') navigate('/teacher/dashboard');
+                if (userRole === 'ADMIN') navigate('/admin/dashboard');
+            } else {
+                alert(data.message || 'Authentication failed');
+            }
+        } catch (error) {
+            console.error('Auth error:', error);
+            alert('An error occurred during authentication.');
+        }
     };
 
     return (
@@ -76,6 +112,24 @@ const Login = () => {
                                 required
                             />
                         </div>
+
+                        {!isLogin && role === 'STUDENT' && (
+                            <div className="relative">
+                                <select
+                                    className="glass-input w-full appearance-none"
+                                    value={academicContextId}
+                                    onChange={(e) => setAcademicContextId(e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled hidden>Select Year, Branch, & Section...</option>
+                                    {contexts.map(c => (
+                                        <option key={c._id} value={c._id}>
+                                            Year {c.year} - {c.branch} - Sec {c.section}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-2 p-1 bg-black/20 rounded-xl backdrop-blur-md">
@@ -83,13 +137,27 @@ const Login = () => {
                             <button
                                 key={r}
                                 type="button"
-                                onClick={() => setRole(r)}
+                                onClick={() => {
+                                    setRole(r);
+                                    if (r === 'ADMIN') {
+                                        setIsLogin(true);
+                                        setEmail('admin@gmail.com');
+                                        setPassword('8340012789');
+                                    } else if (r === 'TEACHER') {
+                                        setIsLogin(true);
+                                        setEmail('');
+                                        setPassword('');
+                                    } else {
+                                        setEmail('');
+                                        setPassword('');
+                                    }
+                                }}
                                 className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${role === r
                                     ? 'bg-indigo-500 text-white shadow-lg'
                                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                {r}
+                                {r === 'TEACHER' ? 'FACULTY' : r}
                             </button>
                         ))}
                     </div>
@@ -99,16 +167,18 @@ const Login = () => {
                         <LogIn className="w-4 h-4" />
                     </button>
 
-                    <p className="text-center text-sm text-slate-400 mt-4">
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <button
-                            type="button"
-                            onClick={() => setIsLogin(!isLogin)}
-                            className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
-                        >
-                            {isLogin ? "Sign Up" : "Log In"}
-                        </button>
-                    </p>
+                    {role !== 'ADMIN' && role !== 'TEACHER' && (
+                        <p className="text-center text-sm text-slate-400 mt-4">
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <button
+                                type="button"
+                                onClick={() => setIsLogin(!isLogin)}
+                                className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+                            >
+                                {isLogin ? "Sign Up" : "Log In"}
+                            </button>
+                        </p>
+                    )}
                 </form>
             </motion.div>
         </div>

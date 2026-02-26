@@ -1,34 +1,59 @@
 import Quiz from '../models/Quiz.js';
 import QuizResult from '../models/QuizResult.js';
-import { generateQuizFromTopic, generateQuizFromNotes } from '../services/ai/quizGeneratorService.js';
+import { generateQuizFromGroq } from '../services/ai/groqQuizService.js';
 import { updateStudentGraph } from '../services/ai/weakAreaDetector.js';
 import { evaluateRisk } from '../services/ai/predictionEngine.js';
 import { evaluateAssignment } from '../services/ai/assignmentEvaluator.js';
+import fs from 'fs';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
 
 // @desc    Generate AI Quiz
 // @route   POST /api/quiz/generate
 // @access  Teacher
 export const generateQuiz = async (req, res) => {
     try {
-        const { title, sourceMode, topic, notesText, baseDifficulty } = req.body;
+        const { topic, difficulty, numQuestions, contextText, targetAudienceId } = req.body;
 
-        let generatedQuestions = [];
-        if (sourceMode === 'TOPIC') {
-            generatedQuestions = await generateQuizFromTopic(topic, baseDifficulty);
-        } else if (sourceMode === 'NOTES') {
-            generatedQuestions = await generateQuizFromNotes(notesText, baseDifficulty);
+        let combinedContext = contextText || '';
+
+        // If a file was uploaded, extract text from it
+        if (req.file) {
+            if (req.file.mimetype === 'application/pdf') {
+                const dataBuffer = fs.readFileSync(req.file.path);
+                const pdfData = await pdfParse(dataBuffer);
+                combinedContext += `\n\n[Extracted File Text]\n${pdfData.text}`;
+            } else {
+                // For direct text files or minimal extraction fallback
+                const stringData = fs.readFileSync(req.file.path, 'utf8');
+                combinedContext += `\n\n[Extracted File Text]\n${stringData}`;
+            }
+            // Cleanup the temp uploaded file for quiz generation
+            fs.unlinkSync(req.file.path);
         }
 
+        // Generate quiz using Groq
+        const generatedQuestions = await generateQuizFromGroq({
+            topic,
+            difficulty: difficulty || 'MEDIUM',
+            numQuestions: parseInt(numQuestions) || 5,
+            contextText: combinedContext
+        });
+
         const quiz = await Quiz.create({
-            title,
+            title: `${topic} Quiz (${difficulty || 'MEDIUM'})`,
             createdBy: req.user._id,
-            sourceMode,
-            baseDifficulty,
-            questions: generatedQuestions
+            sourceMode: combinedContext ? 'NOTES' : 'TOPIC',
+            baseDifficulty: difficulty || 'MEDIUM',
+            questions: generatedQuestions,
+            targetAudience: targetAudienceId,
+            status: 'PUBLISHED'
         });
 
         res.status(201).json(quiz);
     } catch (error) {
+        console.error("Quiz Generation Error: ", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -126,6 +151,27 @@ export const submitQuiz = async (req, res) => {
             accuracyPercentage,
             weakNodesDetected: weakNodes
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete a quiz
+// @route   DELETE /api/quiz/:id
+// @access  Teacher
+export const deleteQuiz = async (req, res) => {
+    try {
+        const quizId = req.params.id;
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            return res.status(404).json({ message: 'Quiz not found' });
+        }
+
+        // Clean up linked results
+        await QuizResult.deleteMany({ quizId: quiz._id });
+        await quiz.deleteOne();
+
+        res.json({ message: 'Quiz deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
