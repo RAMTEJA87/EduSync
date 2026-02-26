@@ -1,13 +1,9 @@
-import Groq from 'groq-sdk';
-import dotenv from 'dotenv';
-dotenv.config();
+import { chatCompletion, safeParseJSON } from './groqClient.js';
 
 export const generateQuizFromGroq = async ({ topic, difficulty, numQuestions, contextText }) => {
-  // Note: Initialize Groq here so it picks up the latest PROCESS.ENV (incase user adds it dynamically via .env)
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || 'dummy_missing_key' });
+  const systemPrompt = `You are an expert AI educational content creator. You generate multiple choice quiz questions in strict JSON format. Never include markdown, conversational text, or explanations outside the JSON structure.`;
 
-  const prompt = `You are an expert AI educational content creator.
-Generate exactly ${numQuestions} multiple choice questions.
+  const userPrompt = `Generate exactly ${numQuestions} multiple choice questions.
 Topic: ${topic}
 Difficulty level: ${difficulty}
 
@@ -24,27 +20,35 @@ Output STRICTLY in JSON format as a SINGLE object matching this exact structure 
     }
   ]
 }
-No markdown formatting or conversational text. Only return the raw JSON block. Ensure exactly 4 options per question.`;
+Ensure exactly 4 options per question. Each question should have a clear, unambiguous correct answer.`;
 
   try {
-    const response = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
+    const rawResponse = await chatCompletion({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
       model: 'llama-3.3-70b-versatile',
       temperature: 0.3,
-      max_tokens: 3000,
-      response_format: { type: "json_object" }
+      maxTokens: 3000,
+      jsonMode: true,
+      requestType: 'quiz_generation',
     });
 
-    const rawJsonContent = response.choices[0]?.message?.content || '{}';
-    const parsed = JSON.parse(rawJsonContent);
+    const parsed = safeParseJSON(rawResponse, null);
 
-    if (!parsed.questions || !Array.isArray(parsed.questions)) {
+    if (!parsed || !parsed.questions || !Array.isArray(parsed.questions)) {
       throw new Error("Groq API returned an invalid JSON schema");
     }
 
     return parsed.questions;
   } catch (error) {
-    console.error("Groq API inference failed:", error);
+    console.error(JSON.stringify({
+      level: 'error',
+      service: 'groqQuizService',
+      event: 'quiz_generation_failed',
+      error: error.message,
+    }));
     throw new Error("Failed to generate quiz from Groq API.");
   }
 };

@@ -1,114 +1,281 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Video, Search, Play, FileText, CheckCircle2 } from 'lucide-react';
-import GlassCard from '../../components/common/GlassCard';
+import {
+  ArrowLeft, Video, Search, Play, FileText, CheckCircle2,
+  ChevronDown, ChevronUp, Copy, BookOpen, HelpCircle, Globe, Loader2, AlertTriangle
+} from 'lucide-react';
+import Card from '../../components/common/Card';
+import api from '../../api/axios';
+
+const LANGUAGES = ['English', 'Hindi', 'Telugu', 'Tamil', 'Spanish'];
+
+const CollapsibleSection = ({ title, icon: Icon, children, defaultOpen = false, iconColor = 'text-text-secondary' }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-border-base rounded-xl overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 bg-surface-alt/50 hover:bg-surface-alt transition-colors"
+      >
+        <span className="flex items-center gap-2 font-bold text-text-primary text-sm">
+          <Icon className={`w-4 h-4 ${iconColor}`} /> {title}
+        </span>
+        {isOpen ? <ChevronUp className="w-4 h-4 text-text-secondary" /> : <ChevronDown className="w-4 h-4 text-text-secondary" />}
+      </button>
+      {isOpen && <div className="p-4 bg-surface-base">{children}</div>}
+    </div>
+  );
+};
+
+const CopyButton = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <button onClick={handleCopy} className="flex items-center gap-1 text-xs text-text-secondary hover:text-primary transition-colors">
+      <Copy className="w-3 h-3" /> {copied ? 'Copied!' : 'Copy'}
+    </button>
+  );
+};
 
 const YoutubeAI = () => {
-    const navigate = useNavigate();
-    const [url, setUrl] = useState('');
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [result, setResult] = useState(null);
+  const navigate = useNavigate();
+  const [url, setUrl] = useState('');
+  const [language, setLanguage] = useState('English');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-    const handleProcess = async (e) => {
-        e.preventDefault();
-        if (!url) return;
-        setIsProcessing(true);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/ai/youtube', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setResult(data);
-            } else {
-                alert("Failed to analyze the YouTube video. Check URL.");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Error connecting to AI service.");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
+  const handleProcess = async (e) => {
+    e.preventDefault();
+    if (!url) return;
+    setIsProcessing(true);
+    setError('');
+    setResult(null);
+    try {
+      const res = await api.post('/api/ai/youtube-summary', { url, language });
+      setResult(res.data);
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.response?.data?.message || 'Failed to summarize video. Please try again.';
+      setError(msg);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
-    return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen relative">
-            <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6">
-                <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-            </button>
+  const buildYoutubeEmbedUrl = (videoId) => {
+    if (!videoId) return null;
+    return `https://www.youtube.com/embed/${videoId}`;
+  };
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-outfit font-bold tracking-tight text-white mb-2 flex items-center gap-3">
-                    <Video className="w-8 h-8 text-red-500" /> YouTube AI Summarizer
-                </h1>
-                <p className="text-slate-400">Paste any educational YouTube link and let AI extract the core concepts.</p>
+  const getAllTextForCopy = () => {
+    if (!result) return '';
+    let text = `# ${result.title}\n\n`;
+    text += `## Summary\n${result.summary}\n\n`;
+    if (result.keyConcepts?.length) {
+      text += `## Key Concepts\n`;
+      result.keyConcepts.forEach(c => {
+        text += `- **${c.concept || c}**: ${c.explanation || ''}\n`;
+      });
+      text += '\n';
+    }
+    if (result.detailedNotes?.length) {
+      text += `## Detailed Notes\n`;
+      result.detailedNotes.forEach(n => {
+        text += `### ${n.topic || 'Note'}\n${n.content || n}\n\n`;
+      });
+    }
+    if (result.practiceQuestions?.length) {
+      text += `## Practice Questions\n`;
+      result.practiceQuestions.forEach((q, i) => {
+        text += `${i + 1}. ${q.question || q}\n`;
+        if (q.hint) text += `   Hint: ${q.hint}\n`;
+      });
+    }
+    return text;
+  };
+
+  return (
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 min-h-screen" style={{ fontFamily: "'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Tamil', sans-serif" }}>
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-4">
+        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+      </button>
+
+      <div className="mb-6">
+        <h1 className="text-3xl font-heading font-bold tracking-tight text-text-primary mb-2 flex items-center gap-3">
+          <Video className="w-8 h-8 text-danger" /> YouTube AI Summarizer
+        </h1>
+        <p className="text-text-secondary">Paste any educational YouTube link — AI extracts transcript, concepts, and practice questions.</p>
+      </div>
+
+      {/* Input Form */}
+      <Card className="mb-6 border border-danger/20">
+        <form onSubmit={handleProcess} className="p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <input
+                type="url"
+                required
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full bg-background border border-border-base rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:border-danger/50 pl-12"
+                maxLength={200}
+              />
+              <Search className="w-5 h-5 text-text-secondary absolute left-4 top-3.5" />
             </div>
 
-            <GlassCard className="mb-8 border border-red-500/20 max-w-3xl">
-                <form onSubmit={handleProcess} className="flex gap-4">
-                    <div className="relative flex-1">
-                        <input
-                            type="url"
-                            required
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            placeholder="https://www.youtube.com/watch?v=..."
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-500/50 pl-12"
-                        />
-                        <Search className="w-5 h-5 text-slate-500 absolute left-4 top-3.5" />
-                    </div>
-                    <button type="submit" disabled={isProcessing} className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all flex items-center gap-2">
-                        {isProcessing ? (
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <><Play className="w-4 h-4" /> Summarize</>
-                        )}
-                    </button>
-                </form>
-            </GlassCard>
+            {/* Language Selector */}
+            <div className="relative">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="appearance-none bg-background border border-border-base rounded-xl px-4 py-3 pr-10 text-text-primary focus:outline-none focus:border-danger/50 text-sm cursor-pointer min-w-[140px]"
+              >
+                {LANGUAGES.map(lang => (
+                  <option key={lang} value={lang}>{lang}</option>
+                ))}
+              </select>
+              <Globe className="w-4 h-4 text-text-secondary absolute right-3 top-3.5 pointer-events-none" />
+            </div>
 
-            {result && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <GlassCard className="border border-white/10">
-                        <div className="aspect-video bg-black/50 rounded-lg mb-6 flex items-center justify-center border border-white/5 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-red-500/10 group-hover:bg-red-500/20 transition-colors" />
-                            <Play className="w-16 h-16 text-white/50 group-hover:text-red-500 transition-colors z-10" />
-                        </div>
-                        <h2 className="text-xl font-bold text-white mb-2">{result.title}</h2>
-                        <span className="text-xs font-bold uppercase tracking-widest text-red-400 bg-red-500/10 px-3 py-1 rounded-full">Extracted via AI</span>
-                    </GlassCard>
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className="px-6 py-3 bg-[#FF0000] hover:bg-[#CC0000] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg min-w-[140px]"
+            >
+              {isProcessing ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+              ) : (
+                <><Play className="w-4 h-4" /> Summarize</>
+              )}
+            </button>
+          </div>
+        </form>
+      </Card>
 
-                    <GlassCard className="border border-white/10 flex flex-col space-y-6">
-                        <div>
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-3">
-                                <FileText className="w-5 h-5 text-slate-400" /> AI Summary
-                            </h3>
-                            <p className="text-slate-300 leading-relaxed text-sm">
-                                {result.summary}
-                            </p>
-                        </div>
-                        <div className="flex-1 bg-white/5 rounded-xl p-6 border border-white/5">
-                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Key Takeaways</h4>
-                            <ul className="space-y-3">
-                                {result.keyPoints.map((point, idx) => (
-                                    <li key={idx} className="flex gap-3 items-start">
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                                        <span className="text-sm text-slate-200">{point}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </GlassCard>
+      {/* Error Display */}
+      {error && (
+        <Card className="border border-danger/30 bg-danger/5">
+          <div className="p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-danger shrink-0" />
+            <p className="text-sm text-danger">{error}</p>
+          </div>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {isProcessing && (
+        <Card className="border border-danger/20">
+          <div className="p-12 flex flex-col items-center justify-center">
+            <div className="relative w-16 h-16 mb-6">
+              <div className="absolute inset-0 border-4 border-t-danger border-r-danger border-b-transparent border-l-transparent rounded-full animate-spin" />
+              <Video className="w-8 h-8 text-danger absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+            </div>
+            <h2 className="text-lg font-bold text-text-primary mb-2">Analyzing Video...</h2>
+            <p className="text-sm text-text-secondary text-center">Fetching transcript, extracting concepts, and generating structured notes.</p>
+          </div>
+        </Card>
+      )}
+
+      {/* Results */}
+      {result && !isProcessing && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Video Preview + Title */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-1 border border-border-base overflow-hidden">
+              {result.videoId ? (
+                <div className="aspect-video">
+                  <iframe
+                    src={buildYoutubeEmbedUrl(result.videoId)}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Video preview"
+                  />
                 </div>
+              ) : (
+                <div className="aspect-video bg-surface-alt flex items-center justify-center">
+                  <Play className="w-16 h-16 text-text-secondary" />
+                </div>
+              )}
+              <div className="p-4">
+                <h2 className="text-lg font-bold text-text-primary mb-2">{result.title}</h2>
+                <span className="text-xs font-bold uppercase tracking-widest text-danger bg-danger/10 px-3 py-1 rounded-full">
+                  AI Analyzed
+                </span>
+              </div>
+            </Card>
+
+            {/* Summary */}
+            <Card className="lg:col-span-2 border border-border-base">
+              <div className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-text-secondary" /> AI Summary
+                  </h3>
+                  <CopyButton text={getAllTextForCopy()} />
+                </div>
+                <p className="text-text-secondary leading-relaxed text-sm whitespace-pre-line">{result.summary}</p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Collapsible Sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Key Concepts */}
+            {result.keyConcepts?.length > 0 && (
+              <CollapsibleSection title="Key Concepts" icon={BookOpen} defaultOpen iconColor="text-primary">
+                <ul className="space-y-3">
+                  {result.keyConcepts.map((item, idx) => (
+                    <li key={idx} className="flex gap-3 items-start">
+                      <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-text-primary text-sm">{item.concept || item}</span>
+                        {item.explanation && <p className="text-xs text-text-secondary mt-1">{item.explanation}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CollapsibleSection>
             )}
+
+            {/* Practice Questions */}
+            {result.practiceQuestions?.length > 0 && (
+              <CollapsibleSection title="Practice Questions" icon={HelpCircle} defaultOpen iconColor="text-warning">
+                <ol className="space-y-3 list-decimal list-inside">
+                  {result.practiceQuestions.map((item, idx) => (
+                    <li key={idx} className="text-sm text-text-primary">
+                      <span className="font-medium">{item.question || item}</span>
+                      {item.hint && <p className="text-xs text-text-secondary mt-1 ml-5 italic">Hint: {item.hint}</p>}
+                    </li>
+                  ))}
+                </ol>
+              </CollapsibleSection>
+            )}
+          </div>
+
+          {/* Detailed Notes */}
+          {result.detailedNotes?.length > 0 && (
+            <CollapsibleSection title="Detailed Notes" icon={FileText} defaultOpen iconColor="text-success">
+              <div className="space-y-4">
+                {result.detailedNotes.map((note, idx) => (
+                  <div key={idx} className="border-l-2 border-success/30 pl-4">
+                    <h4 className="font-semibold text-text-primary text-sm mb-1">{note.topic || `Section ${idx + 1}`}</h4>
+                    <p className="text-sm text-text-secondary leading-relaxed">{note.content || note}</p>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleSection>
+          )}
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default YoutubeAI;

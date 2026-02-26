@@ -45,6 +45,11 @@ export const registerUser = async (req, res) => {
         let structure = null;
         const requestedRole = role || 'STUDENT';
 
+        // Self-registration is only allowed for STUDENT role
+        if (requestedRole !== 'STUDENT') {
+            return res.status(403).json({ message: 'Only student registration is allowed. Teachers and admins must be created by an administrator.' });
+        }
+
         if (requestedRole === 'STUDENT' && academicContextId) {
             structure = await AcademicStructure.findById(academicContextId);
             if (!structure) {

@@ -4,10 +4,11 @@ import { generateQuizFromGroq } from '../services/ai/groqQuizService.js';
 import { updateStudentGraph } from '../services/ai/weakAreaDetector.js';
 import { evaluateRisk } from '../services/ai/predictionEngine.js';
 import { evaluateAssignment } from '../services/ai/assignmentEvaluator.js';
-import fs from 'fs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
+
+const MAX_QUESTIONS = 50;
 
 // @desc    Generate AI Quiz
 // @route   POST /api/quiz/generate
@@ -16,28 +17,29 @@ export const generateQuiz = async (req, res) => {
     try {
         const { topic, difficulty, numQuestions, contextText, targetAudienceId } = req.body;
 
+        const clampedNumQuestions = Math.min(Math.max(parseInt(numQuestions) || 5, 1), MAX_QUESTIONS);
         let combinedContext = contextText || '';
 
-        // If a file was uploaded, extract text from it
+        // If a file was uploaded, extract text from its in-memory buffer
         if (req.file) {
-            if (req.file.mimetype === 'application/pdf') {
-                const dataBuffer = fs.readFileSync(req.file.path);
-                const pdfData = await pdfParse(dataBuffer);
-                combinedContext += `\n\n[Extracted File Text]\n${pdfData.text}`;
-            } else {
-                // For direct text files or minimal extraction fallback
-                const stringData = fs.readFileSync(req.file.path, 'utf8');
-                combinedContext += `\n\n[Extracted File Text]\n${stringData}`;
+            try {
+                if (req.file.mimetype === 'application/pdf') {
+                    const pdfData = await pdfParse(req.file.buffer);
+                    combinedContext += `\n\n[Extracted File Text]\n${pdfData.text}`;
+                } else {
+                    const stringData = req.file.buffer.toString('utf8');
+                    combinedContext += `\n\n[Extracted File Text]\n${stringData}`;
+                }
+            } catch (extractError) {
+                console.error('File text extraction failed:', extractError.message);
             }
-            // Cleanup the temp uploaded file for quiz generation
-            fs.unlinkSync(req.file.path);
         }
 
         // Generate quiz using Groq
         const generatedQuestions = await generateQuizFromGroq({
             topic,
             difficulty: difficulty || 'MEDIUM',
-            numQuestions: parseInt(numQuestions) || 5,
+            numQuestions: clampedNumQuestions,
             contextText: combinedContext
         });
 
@@ -66,13 +68,20 @@ export const getQuizForStudent = async (req, res) => {
         const quiz = await Quiz.findById(req.params.id);
         if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
 
-        // Fisher-Yates Shuffle for questions
-        const shuffledQuestions = [...quiz.questions].sort(() => Math.random() - 0.5);
+        // Fisher-Yates (Knuth) Shuffle for questions
+        const shuffledQuestions = [...quiz.questions];
+        for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+        }
 
         // Shuffle options and remap correctOptionIndex
         const sanitizedQuestions = shuffledQuestions.map(q => {
             const optionsWithIndex = q.options.map((opt, index) => ({ text: opt, originalIndex: index }));
-            optionsWithIndex.sort(() => Math.random() - 0.5); // Shuffle options
+            for (let i = optionsWithIndex.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [optionsWithIndex[i], optionsWithIndex[j]] = [optionsWithIndex[j], optionsWithIndex[i]];
+            }
 
             return {
                 _id: q._id,
@@ -99,7 +108,15 @@ export const getQuizForStudent = async (req, res) => {
 export const submitQuiz = async (req, res) => {
     try {
         const { timeTakenSeconds, answers } = req.body; // answers: [{ questionId, selectedOptionText, timeSpent }]
+
+        if (!Array.isArray(answers)) {
+            return res.status(400).json({ message: 'Answers must be an array' });
+        }
+
         const quiz = await Quiz.findById(req.params.id);
+        if (!quiz) {
+            return res.status(404).json({ message: 'Quiz not found' });
+        }
 
         let totalScore = 0;
         let maxScore = 0;
@@ -129,8 +146,10 @@ export const submitQuiz = async (req, res) => {
         const accuracyPercentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
         const marksAssigned = await evaluateAssignment(totalScore, maxScore);
 
-        // AI Service Updates asynchronously
-        updateStudentGraph(req.user._id, weakNodes);
+        // AI Service Updates asynchronously (with error handling)
+        updateStudentGraph(req.user._id, weakNodes).catch(err =>
+            console.error('weakAreaDetector failed:', err.message)
+        );
 
         const result = await QuizResult.create({
             studentId: req.user._id,
@@ -143,7 +162,9 @@ export const submitQuiz = async (req, res) => {
         });
 
         // Evaluate Risk after new attempt
-        evaluateRisk(req.user._id);
+        evaluateRisk(req.user._id).catch(err =>
+            console.error('predictionEngine failed:', err.message)
+        );
 
         res.status(201).json({
             message: 'Quiz evaluated successfully',
