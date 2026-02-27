@@ -51,7 +51,8 @@ export const generateQuiz = async (req, res) => {
         const quiz = await Quiz.create({
             title: `${topic} Quiz (${difficulty || 'MEDIUM'})`,
             createdBy: req.user._id,
-            sourceMode: combinedContext ? 'NOTES' : 'TOPIC',
+            sourceType: req.file ? 'PDF' : 'TOPIC',
+            topicName: topic,
             baseDifficulty: difficulty || 'MEDIUM',
             questions: generatedQuestions,
             targetAudience: targetAudienceId,
