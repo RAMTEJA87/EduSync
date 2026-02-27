@@ -63,6 +63,25 @@ if (!student) {
   console.log('✅ Student already exists: student@edusync.com');
 }
 
+// Create test admin
+let admin = await User.findOne({ email: 'admin@edusync.com' });
+if (!admin) {
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash('admin@123', salt);
+  admin = await User.create({
+    name: 'Admin User',
+    email: 'admin@edusync.com',
+    passwordHash,
+    role: 'ADMIN',
+    loginCount: 0,
+  });
+  console.log('✅ Admin created:');
+  console.log('   Email: admin@edusync.com');
+  console.log('   Password: admin@123');
+} else {
+  console.log('✅ Admin already exists: admin@edusync.com');
+}
+
 console.log('\n========================================');
 console.log('✅ TEST ACCOUNTS READY');
 console.log('========================================');
