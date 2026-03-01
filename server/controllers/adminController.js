@@ -8,6 +8,7 @@ import {
     updateUserById,
     deleteUserById
 } from '../services/adminService.js';
+import { bulkImportStudents } from '../services/admin/bulkImportService.js';
 
 // ==========================================
 // ACADEMIC STRUCTURE CONTROLLERS
@@ -84,6 +85,28 @@ export const deleteUser = async (req, res) => {
     try {
         await deleteUserById(req.params.id);
         res.json({ message: 'User removed' });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+};
+
+// ==========================================
+// BULK IMPORT CONTROLLER
+// ==========================================
+
+export const bulkImportUsers = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Excel file is required' });
+        }
+
+        const { sectionId } = req.body;
+        if (!sectionId) {
+            return res.status(400).json({ message: 'Section (academicContextId) is required' });
+        }
+
+        const result = await bulkImportStudents(req.file.buffer, sectionId);
+        res.status(201).json(result);
     } catch (error) {
         res.status(error.statusCode || 500).json({ message: error.message });
     }

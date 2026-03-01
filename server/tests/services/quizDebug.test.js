@@ -25,6 +25,13 @@ describe('Quiz Generation Debug - LinkedList.pdf Scenario', () => {
 
   test('DEBUG: Extract text from LinkedList.pdf if exists', async () => {
     const uploadsDir = path.join(process.cwd(), 'uploads');
+
+    if (!fs.existsSync(uploadsDir)) {
+      console.log('No uploads/ directory found — skipping');
+      expect(true).toBe(true);
+      return;
+    }
+
     const pdfs = fs.readdirSync(uploadsDir).filter(f => f.toLowerCase().includes('linked'));
     
     if (pdfs.length === 0) {
@@ -57,6 +64,13 @@ describe('Quiz Generation Debug - LinkedList.pdf Scenario', () => {
   test('DEBUG: Verify PDF source uses extracted text in prompt', async () => {
     // Check if there's a real LinkedList PDF
     const uploadsDir = path.join(process.cwd(), 'uploads');
+
+    if (!fs.existsSync(uploadsDir)) {
+      console.log('No uploads/ directory found — skipping');
+      expect(true).toBe(true);
+      return;
+    }
+
     const files = fs.readdirSync(uploadsDir);
     const linkedListPdf = files.find(f => 
       f.toLowerCase().includes('linked') && f.endsWith('.pdf')

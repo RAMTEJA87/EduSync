@@ -10,7 +10,7 @@ TECH STACK:
 - Database: MongoDB (Mongoose ODM)
 - Auth: JWT tokens + bcryptjs password hashing
 - AI: Groq API using llama-3.3-70b-versatile model
-- File uploads: Multer (stored locally in /server/uploads)
+- File uploads: Multer (stored in MongoDB as binary data)
 
 PROJECT STRUCTURE:
   /client/src/pages/auth/Login.jsx          → Login page (role selector: STUDENT/TEACHER/ADMIN)
@@ -18,7 +18,7 @@ PROJECT STRUCTURE:
   /client/src/pages/student/QuizAttempt.jsx → Timed MCQ quiz page
   /client/src/pages/teacher/TeacherDashboard.jsx → Teacher command center
   /client/src/pages/admin/AdminDashboard.jsx → Admin panel
-  /client/src/components/common/GlassCard.jsx → Shared glassmorphism card component
+  /client/src/components/common/Card.jsx → Shared card component
 
   /server/server.js             → Express app entry, Socket.IO setup
   /server/config/db.js          → MongoDB connection
@@ -52,7 +52,7 @@ ADMIN:
 - Two-tab dashboard: "Academic Hierarchy" and "User Directory"
 - Academic Hierarchy: CRUD for Year/Branch/Section nodes (e.g. Year 2 / CSE / Section A)
 - User Directory: Create/edit/delete Students and Teachers; assign students to a section
-- API calls: /api/admin/academic, /api/admin/users (routes NOT YET BUILT)
+- API calls: /api/admin/academic, /api/admin/users, /api/admin/users/bulk-import
 
 TEACHER:
 - Dropdown to select a class section (Year/Branch/Section)

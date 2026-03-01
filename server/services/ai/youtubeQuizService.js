@@ -28,12 +28,12 @@ const buildYoutubeQuizPrompt = (summaryContent, questionCount, difficulty) => {
 
 Difficulty guidelines: ${difficultyInstructions[difficulty]}
 
-CRITICAL: Return ONLY valid JSON array. No markdown, no code blocks.`,
+CRITICAL: Return ONLY a valid JSON object with a "questions" key containing the array. No markdown, no code blocks.`,
     user: `Generate exactly ${questionCount} ${difficulty} level multiple-choice questions from this summary content:
 
 ${summaryContent}
 
-Return JSON array format: [{"questionText":"...","options":["...","...","...","..."],"correctOptionIndex":0,"explanation":"..."}]`,
+Return JSON object format: {"questions":[{"questionText":"...","options":["...","...","...","..."],"correctOptionIndex":0,"explanation":"..."}]}`,
   };
 };
 
@@ -85,9 +85,10 @@ export const generateYoutubeQuiz = async ({ summaryContent, questionCount = 10, 
 
     // Parse and validate
     const parsed = safeParseJSON(rawResponse, null);
-    
-    // Must be an array
-    if (!Array.isArray(parsed)) {
+
+    // Extract questions array from response object
+    const questions = Array.isArray(parsed) ? parsed : parsed?.questions;
+    if (!Array.isArray(questions)) {
       console.error(JSON.stringify({
         level: 'error',
         service: 'youtubeQuiz',
@@ -100,7 +101,7 @@ export const generateYoutubeQuiz = async ({ summaryContent, questionCount = 10, 
     }
 
     // Must have questions
-    if (parsed.length === 0) {
+    if (questions.length === 0) {
       console.error(JSON.stringify({
         level: 'error',
         service: 'youtubeQuiz',
@@ -111,7 +112,7 @@ export const generateYoutubeQuiz = async ({ summaryContent, questionCount = 10, 
     }
 
     // Normalize and validate each question
-    const validQuestions = parsed
+    const validQuestions = questions
       .filter((q) => {
         return (
           q.questionText &&
@@ -141,8 +142,8 @@ export const generateYoutubeQuiz = async ({ summaryContent, questionCount = 10, 
         service: 'youtubeQuiz',
         event: 'no_valid_questions',
         userId,
-        totalParsed: parsed.length,
-        previewFirst: parsed[0] ? JSON.stringify(parsed[0]).slice(0, 200) : 'N/A',
+        totalParsed: questions.length,
+        previewFirst: questions[0] ? JSON.stringify(questions[0]).slice(0, 200) : 'N/A',
       }));
       return FALLBACK_RESPONSE;
     }

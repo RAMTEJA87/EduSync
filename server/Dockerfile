@@ -3,7 +3,7 @@ FROM node:22-slim
 # Install yt-dlp and python (needed for YouTube summarizer)
 RUN apt-get update && \
     apt-get install -y python3 python3-pip curl && \
-    pip3 install --break-system-packages yt-dlp && \
+    pip3 install --break-system-packages yt-dlp==2025.1.15 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

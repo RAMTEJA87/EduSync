@@ -174,6 +174,21 @@ export const updateUserById = async (id, { name, email, role, academicContextId,
         throw error;
     }
 
+    // ─── Role Lock: STUDENT role is permanent ─────────────────────
+    if (user.role === 'STUDENT' && role && role !== 'STUDENT') {
+        const error = new Error('Student role is permanent and cannot be changed');
+        error.statusCode = 403;
+        throw error;
+    }
+
+    // ─── Academic Context Lock: once assigned, permanent for students ──
+    if (user.role === 'STUDENT' && user.academicContext && academicContextId &&
+        String(user.academicContext) !== String(academicContextId)) {
+        const error = new Error('Academic context is permanently assigned for this student and cannot be changed');
+        error.statusCode = 403;
+        throw error;
+    }
+
     const nextRole = role || user.role;
     user.name = name || user.name;
     user.email = email || user.email;

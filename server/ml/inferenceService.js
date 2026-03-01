@@ -2,8 +2,8 @@ import * as tf from '@tensorflow/tfjs';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { extractFeatures, featuresToVector, FEATURE_NAMES } from './featureExtractor.js';
-import { mlPredictionCache, getOrCompute } from './cacheService.js';
+import { extractFeatures, featuresToVector } from './featureExtractor.js';
+import { mlPredictionCache } from './cacheService.js';
 import MLAuditLog from '../models/MLAuditLog.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

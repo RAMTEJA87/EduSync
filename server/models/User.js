@@ -65,5 +65,6 @@ const UserSchema = new mongoose.Schema({
 // ─── Indexes for Performance Optimization ────────────────────────
 UserSchema.index({ role: 1 });
 UserSchema.index({ academicContext: 1 });
+UserSchema.index({ rollNumber: 1 });
 
 export default mongoose.model('User', UserSchema);

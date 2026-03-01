@@ -24,12 +24,25 @@ const upload = multer({
         if (ALLOWED_MIMETYPES.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error(`File type not allowed: ${file.mimetype}`));
+            const err = new Error(`File type not allowed: ${file.mimetype}`);
+            err.statusCode = 415;
+            cb(err);
         }
     }
 });
 
-router.post('/upload', protect, roleGuard('TEACHER'), upload.single('document'), uploadMaterial);
+// Multer error handler middleware
+const handleMulterError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+    }
+    if (err && err.statusCode) {
+        return res.status(err.statusCode).json({ message: err.message });
+    }
+    next(err);
+};
+
+router.post('/upload', protect, roleGuard('TEACHER'), upload.single('document'), handleMulterError, uploadMaterial);
 router.get('/download/:id', protect, downloadMaterial);
 router.get('/context/:contextId', protect, getMaterialsByContext);
 router.delete('/:id', protect, roleGuard('TEACHER'), deleteMaterial);

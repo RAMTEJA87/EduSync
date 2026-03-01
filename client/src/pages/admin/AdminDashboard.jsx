@@ -4,7 +4,7 @@ import Card from '../../components/common/Card';
 import PageContainer from '../../components/common/PageContainer';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
-import { ShieldCheck, LogOut, X, Plus, Trash2, Edit2, Users, Layers } from 'lucide-react';
+import { ShieldCheck, LogOut, X, Plus, Trash2, Edit2, Users, Layers, Upload, FileSpreadsheet, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/axios';
 
@@ -36,6 +36,13 @@ const AdminDashboard = () => {
 
     // Section-wise Students State
     const [viewStudentsModal, setViewStudentsModal] = useState({ isOpen: false, structure: null });
+
+    // Bulk Import State
+    const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
+    const [bulkFile, setBulkFile] = useState(null);
+    const [bulkSectionId, setBulkSectionId] = useState('');
+    const [bulkImporting, setBulkImporting] = useState(false);
+    const [bulkResult, setBulkResult] = useState(null);
 
     useEffect(() => {
         if (activeTab === 'HIERARCHY') fetchStructures();
@@ -214,6 +221,54 @@ const AdminDashboard = () => {
     };
 
     // ==========================================
+    // Bulk Import Logic
+    // ==========================================
+    const openBulkImportModal = () => {
+        setBulkFile(null);
+        setBulkSectionId('');
+        setBulkResult(null);
+        setBulkImporting(false);
+        setIsBulkImportModalOpen(true);
+    };
+
+    const handleBulkFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const EXCEL_MIMETYPES = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel'
+            ];
+            if (!EXCEL_MIMETYPES.includes(file.type)) {
+                alert('Only Excel files (.xlsx, .xls) are allowed');
+                e.target.value = '';
+                return;
+            }
+            setBulkFile(file);
+        }
+    };
+
+    const handleBulkImport = async () => {
+        if (!bulkFile || !bulkSectionId) return;
+        setBulkImporting(true);
+        setBulkResult(null);
+        try {
+            const formData = new FormData();
+            formData.append('file', bulkFile);
+            formData.append('sectionId', bulkSectionId);
+            const res = await api.post('/api/admin/users/bulk-import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setBulkResult(res.data);
+            fetchUsers();
+            fetchStructures();
+        } catch (error) {
+            setBulkResult({ error: error.response?.data?.message || error.message });
+        } finally {
+            setBulkImporting(false);
+        }
+    };
+
+    // ==========================================
     // Render Functions
     // ==========================================
     return (
@@ -327,6 +382,11 @@ const AdminDashboard = () => {
                                         <Button variant="primary" onClick={() => openUserModal()} className="flex items-center gap-2 text-sm shrink-0">
                                             <Plus className="w-4 h-4" /> Add User
                                         </Button>
+                                        {userRoleFilter === 'STUDENT' && (
+                                            <Button variant="ghost" onClick={openBulkImportModal} className="flex items-center gap-2 text-sm shrink-0 border border-border-base">
+                                                <Upload className="w-4 h-4" /> Bulk Import
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -449,11 +509,18 @@ const AdminDashboard = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-text-secondary mb-1.5">Role</label>
                                         <div className="relative">
-                                            <select value={uRole} onChange={e => setURole(e.target.value)} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer">
-                                                <option value="STUDENT">Student</option>
-                                                <option value="TEACHER">Faculty</option>
-                                            </select>
-                                            <div className="absolute right-4 top-3 pointer-events-none text-text-secondary">▼</div>
+                                            {editUserId && uRole === 'STUDENT' ? (
+                                                <div className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-muted cursor-not-allowed flex items-center gap-2">
+                                                    Student (locked)
+                                                    <span className="text-xs text-warning ml-auto">Permanent</span>
+                                                </div>
+                                            ) : (
+                                                <select value={uRole} onChange={e => setURole(e.target.value)} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer">
+                                                    <option value="STUDENT">Student</option>
+                                                    <option value="TEACHER">Faculty</option>
+                                                </select>
+                                            )}
+                                            {!(editUserId && uRole === 'STUDENT') && <div className="absolute right-4 top-3 pointer-events-none text-text-secondary">&#9660;</div>}
                                         </div>
                                     </div>
 
@@ -461,13 +528,25 @@ const AdminDashboard = () => {
                                         <div>
                                             <label className="block text-sm font-medium text-text-secondary mb-1.5">Academic Context</label>
                                             <div className="relative">
-                                                <select value={uContextId} onChange={e => setUContextId(e.target.value)} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer text-sm">
-                                                    <option value="">Unassigned</option>
-                                                    {structures.map(s => (
-                                                        <option key={s._id} value={s._id}>Year {s.year} - {s.branch} - Sec {s.section}</option>
-                                                    ))}
-                                                </select>
-                                                <div className="absolute right-4 top-3 pointer-events-none text-text-secondary text-xs">▼</div>
+                                                {editUserId && uContextId ? (
+                                                    <div className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-muted cursor-not-allowed flex items-center gap-2 text-sm">
+                                                        {(() => {
+                                                            const s = structures.find(s => s._id === uContextId);
+                                                            return s ? `Year ${s.year} - ${s.branch} - Sec ${s.section} (locked)` : 'Assigned (locked)';
+                                                        })()}
+                                                        <span className="text-xs text-warning ml-auto">Permanent</span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <select value={uContextId} onChange={e => setUContextId(e.target.value)} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer text-sm">
+                                                            <option value="">Unassigned</option>
+                                                            {structures.map(s => (
+                                                                <option key={s._id} value={s._id}>Year {s.year} - {s.branch} - Sec {s.section}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-4 top-3 pointer-events-none text-text-secondary text-xs">&#9660;</div>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -549,6 +628,95 @@ const AdminDashboard = () => {
                                         <div className="py-12 text-center text-text-secondary border border-dashed border-border-base rounded-[var(--radius-md)] bg-surface-base">
                                             <Users className="w-10 h-10 mx-auto mb-3 opacity-30 text-text-muted" />
                                             <p className="text-sm font-medium text-text-muted">No students enrolled in this section yet.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Bulk Import Modal */}
+            <AnimatePresence>
+                {isBulkImportModalOpen && (
+                    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-background-base/80 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-lg">
+                            <Card className="p-6 border-primary/30 shadow-level3">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold font-heading text-text-primary flex items-center gap-2">
+                                        <FileSpreadsheet className="w-5 h-5 text-primary" />
+                                        Bulk Import Students
+                                    </h3>
+                                    <button onClick={() => setIsBulkImportModalOpen(false)} className="text-text-muted hover:text-text-primary transition-colors"><X className="w-5 h-5" /></button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-1.5">Excel File (.xlsx, .xls)</label>
+                                        <input type="file" accept=".xlsx,.xls" onChange={handleBulkFileChange} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary-dark cursor-pointer" />
+                                        <p className="text-xs text-text-muted mt-1">Required columns: "Name of the Student", "Roll Number", "Section"</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-1.5">Target Section</label>
+                                        <div className="relative">
+                                            <select value={bulkSectionId} onChange={e => setBulkSectionId(e.target.value)} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer text-sm">
+                                                <option value="">Select a section</option>
+                                                {structures.map(s => (
+                                                    <option key={s._id} value={s._id}>Year {s.year} - {s.branch} - Sec {s.section}</option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-4 top-3 pointer-events-none text-text-secondary text-xs">&#9660;</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <Button variant="primary" onClick={handleBulkImport} disabled={!bulkFile || !bulkSectionId || bulkImporting} className="w-full justify-center flex items-center gap-2">
+                                            <Upload className="w-4 h-4" />
+                                            {bulkImporting ? 'Importing...' : 'Upload & Import'}
+                                        </Button>
+                                    </div>
+
+                                    {bulkResult && (
+                                        <div className={`mt-4 p-4 rounded-[var(--radius-md)] border ${bulkResult.error ? 'bg-danger/5 border-danger/20' : 'bg-success/5 border-success/20'}`}>
+                                            {bulkResult.error ? (
+                                                <div className="flex items-start gap-2">
+                                                    <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
+                                                    <p className="text-sm text-danger">{bulkResult.error}</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircle className="w-5 h-5 text-success" />
+                                                        <span className="text-sm font-medium text-text-primary">Import Complete</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                                                        <div className="p-2 bg-surface-alt rounded-md">
+                                                            <div className="font-bold text-text-primary">{bulkResult.totalRows}</div>
+                                                            <div className="text-xs text-text-muted">Total Rows</div>
+                                                        </div>
+                                                        <div className="p-2 bg-surface-alt rounded-md">
+                                                            <div className="font-bold text-success">{bulkResult.insertedCount}</div>
+                                                            <div className="text-xs text-text-muted">Inserted</div>
+                                                        </div>
+                                                        <div className="p-2 bg-surface-alt rounded-md">
+                                                            <div className="font-bold text-warning">{bulkResult.duplicateCount}</div>
+                                                            <div className="text-xs text-text-muted">Duplicates</div>
+                                                        </div>
+                                                    </div>
+                                                    {bulkResult.errors && bulkResult.errors.length > 0 && (
+                                                        <div className="mt-2 max-h-32 overflow-y-auto text-xs text-text-secondary space-y-1">
+                                                            {bulkResult.errors.map((err, i) => (
+                                                                <div key={i} className="flex items-start gap-1">
+                                                                    <AlertTriangle className="w-3 h-3 text-warning shrink-0 mt-0.5" />
+                                                                    {err}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

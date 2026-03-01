@@ -9,8 +9,8 @@ export const protect = async (req, res, next) => {
         req.headers.authorization.startsWith('Bearer')
     ) {
         token = req.headers.authorization.split(' ')[1];
-    } else if (req.query && req.query.token) {
-        // Support token via query param (for file downloads via window.open)
+    } else if (req.query && req.query.token && req.path.startsWith('/download')) {
+        // Support token via query param only for file download routes
         token = req.query.token;
     }
 
