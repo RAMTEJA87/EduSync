@@ -458,8 +458,8 @@ const TeacherDashboard = () => {
                                 {analytics.recentQuizzes.slice(0, 3).map((q) => (
                                     <div key={q._id} className="flex items-start justify-between bg-surface-alt border border-border-base rounded-[var(--radius-md)] p-3 group hover:border-border-hover transition-colors">
                                         <div className="pr-2">
-                                            <p className="text-sm text-text-primary font-semibold line-clamp-1">{q.topic}</p>
-                                            <p className="text-xs text-text-secondary mt-1">{q.difficulty} • {q.questions?.length || 0} Qs</p>
+                                            <p className="text-sm text-text-primary font-semibold line-clamp-1">{q.title}</p>
+                                            <p className="text-xs text-text-secondary mt-1">{q.baseDifficulty} • {q.questions?.length || 0} Qs</p>
                                         </div>
                                         <button onClick={() => handleDeleteQuiz(q._id)} className="text-text-muted hover:text-danger hover:bg-danger/10 p-1.5 rounded-md transition-colors shrink-0">
                                             <Trash2 className="w-4 h-4" />

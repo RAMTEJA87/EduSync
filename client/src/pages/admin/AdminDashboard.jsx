@@ -136,7 +136,13 @@ const AdminDashboard = () => {
             if (uRole === 'STUDENT' && uContextId !== '') reqBody.academicContextId = uContextId;
             else if (uRole !== 'STUDENT') reqBody.academicContextId = null;
 
-            if (!editUserId && uPassword) reqBody.password = uPassword;
+            if (uPassword && uPassword.trim() !== '') {
+                if (editUserId) {
+                    const confirmed = window.confirm("Are you sure you want to reset this user's password?");
+                    if (!confirmed) return;
+                }
+                reqBody.password = uPassword.trim();
+            }
 
             const url = editUserId ? `/api/admin/users/${editUserId}` : '/api/admin/users';
             const method = editUserId ? 'PUT' : 'POST';
@@ -500,12 +506,11 @@ const AdminDashboard = () => {
                                         <label className="block text-sm font-medium text-text-secondary mb-1.5">Email</label>
                                         <input type="email" required value={uEmail} onChange={e => setUEmail(e.target.value)} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
                                     </div>
-                                    {!editUserId && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Set Initial Password</label>
-                                            <input type="text" required value={uPassword} onChange={e => setUPassword(e.target.value)} placeholder="Minimum 6 characters" className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
-                                        </div>
-                                    )}
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-1.5">{editUserId ? 'Reset Password' : 'Set Initial Password'}</label>
+                                        <input type="password" required={!editUserId} value={uPassword} onChange={e => setUPassword(e.target.value)} placeholder={editUserId ? "Leave blank to keep existing password" : "Minimum 6 characters"} className="w-full bg-surface-alt border border-border-base rounded-[var(--radius-md)] px-4 py-2.5 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                                        {editUserId && <p className="text-xs text-text-muted mt-1 italic">👉 Leave blank to keep existing password</p>}
+                                    </div>
                                     <div>
                                         <label className="block text-sm font-medium text-text-secondary mb-1.5">Role</label>
                                         <div className="relative">

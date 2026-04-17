@@ -279,9 +279,17 @@ const StudentDashboard = () => {
                                     <li
                                         key={i}
                                         className="flex flex-col p-4 rounded-[var(--radius-md)] bg-surface border border-border-base hover:border-primary hover:shadow-level1 transition-all cursor-pointer group"
-                                        onClick={() => {
-                                            const token = localStorage.getItem('token');
-                                            window.open(`${import.meta.env.VITE_API_URL || ''}${res.url}${token ? `?token=${token}` : ''}`, '_blank');
+                                        onClick={async () => {
+                                            try {
+                                                const response = await api.get(res.url, { responseType: 'blob' });
+                                                const file = new Blob([response.data], { type: response.headers['content-type'] });
+                                                const fileURL = URL.createObjectURL(file);
+                                                window.open(fileURL, '_blank');
+                                                setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+                                            } catch (error) {
+                                                console.error('Failed to load material', error);
+                                                // Global axios interceptor handles 401s automatically
+                                            }
                                         }}
                                     >
                                         <div className="flex items-start justify-between gap-4 mb-2">

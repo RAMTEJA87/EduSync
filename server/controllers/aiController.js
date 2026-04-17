@@ -203,6 +203,11 @@ export const sendChatMessage = async (req, res) => {
       timestamp: new Date(),
     });
 
+    // Enforce strict 200-message truncation
+    if (conversation.messages.length > 200) {
+      conversation.messages = conversation.messages.slice(-200);
+    }
+
     // Save conversation
     await conversation.save();
 
