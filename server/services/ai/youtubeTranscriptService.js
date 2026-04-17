@@ -1,4 +1,5 @@
-import { YoutubeTranscript } from "youtube-transcript";
+// Using specific path due to ESM package misconfiguration in youtube-transcript v1.3.0
+import { YoutubeTranscript } from "youtube-transcript/dist/youtube-transcript.esm.js";
 
 const transcriptCache = new Map(); // Simple in-memory cache for performance
 
