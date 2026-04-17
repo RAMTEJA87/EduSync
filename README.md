@@ -291,7 +291,7 @@ All features are fully functional:
 - **Secure Course Materials Viewer**: Course materials are now fetched securely via authenticated API blob streams and rendered in an in-app modal, eliminating popup blocker issues and preventing JWT leakage in URLs.
 - **Robust Smart Revision Generator**: Implemented a highly resilient JSON parsing and validation layer with auto-repair and safe fallback arrays, guaranteeing the UI never crashes due to malformed AI output.
 - **YouTube AI Summarizer Upgrades**: Completely removed brittle system dependencies (`yt-dlp` and `python`). Transcripts are now fetched natively via Node.js, drastically improving cloud portability and stability.
-- **Doubt Solver Memory Management**: Added strict message history truncation limits to prevent conversation histories from exceeding MongoDB's 16MB document size limit.
+- **Scalable Doubt Solver Memory**: Refactored the AI Chat from a single-array document anti-pattern to a highly scalable, paginated message model. Added automated cleanup to retain only the last 5000 messages per user, preventing MongoDB 16MB document limits from ever being breached.
 
 ---
 

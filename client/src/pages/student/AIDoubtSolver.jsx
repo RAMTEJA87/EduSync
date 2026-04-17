@@ -76,28 +76,34 @@ const AIDoubtSolver = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [error, setError] = useState('');
 
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   // Load chat history on mount
   useEffect(() => {
     const loadChatHistory = async () => {
       try {
         setIsLoadingHistory(true);
-        const res = await api.get('/api/ai/chat/history');
+        const res = await api.get('/api/ai/chat/history?page=1&limit=20');
         
         if (res.data.success && res.data.messages?.length > 0) {
           // Convert stored messages to display format
           const formattedMessages = res.data.messages.map((msg, idx) => ({
-            id: idx,
+            id: msg._id || idx,
             type: msg.role === 'USER' ? 'user' : 'ai',
             text: msg.content,
             data: msg.role === 'AI' ? { answer: msg.content } : null,
-            timestamp: msg.timestamp,
+            timestamp: msg.createdAt || msg.timestamp,
           }));
           setMessages(formattedMessages);
+          setHasMore(res.data.hasMore);
+          setPage(1);
         } else {
           // Show welcome message if no history
           setMessages([
             {
-              id: 1,
+              id: 'welcome',
               type: 'ai',
               text: "Hello! I'm your AI academic tutor. Ask me anything about your subjects and I'll provide detailed explanations. Your conversation is automatically saved!",
               data: null,
@@ -109,7 +115,7 @@ const AIDoubtSolver = () => {
         // Use default welcome message on error
         setMessages([
           {
-            id: 1,
+            id: 'welcome',
             type: 'ai',
             text: "Hello! I'm your AI academic tutor. Ask me anything about your subjects and I'll provide detailed explanations. Your conversation is automatically saved!",
             data: null,
@@ -122,6 +128,34 @@ const AIDoubtSolver = () => {
 
     loadChatHistory();
   }, []);
+
+  const loadMoreMessages = async () => {
+    if (isLoadingMore || !hasMore) return;
+    try {
+      setIsLoadingMore(true);
+      const nextPage = page + 1;
+      const res = await api.get(`/api/ai/chat/history?page=${nextPage}&limit=20`);
+      
+      if (res.data.success && res.data.messages?.length > 0) {
+        const olderMessages = res.data.messages.map((msg, idx) => ({
+          id: msg._id || `older-${idx}`,
+          type: msg.role === 'USER' ? 'user' : 'ai',
+          text: msg.content,
+          data: msg.role === 'AI' ? { answer: msg.content } : null,
+          timestamp: msg.createdAt || msg.timestamp,
+        }));
+        
+        // Prepend older messages
+        setMessages(prev => [...olderMessages, ...prev]);
+        setHasMore(res.data.hasMore);
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.error('Failed to load older messages:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -278,6 +312,25 @@ const AIDoubtSolver = () => {
             }}
           >
             <div className="max-w-3xl mx-auto w-full space-y-4 pb-4">
+              {hasMore && (
+                <div className="flex justify-center pt-2 pb-4">
+                  <button
+                    onClick={loadMoreMessages}
+                    disabled={isLoadingMore}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-text-secondary bg-surface-alt hover:bg-surface border border-border-base hover:border-primary/30 rounded-full transition-all shadow-sm"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Loader className="w-3 h-3 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      'Load older messages'
+                    )}
+                  </button>
+                </div>
+              )}
+
               {messages.map(msg => (
                 <div
                   key={msg.id}
