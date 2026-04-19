@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, BookOpen, Shield, ArrowRight, Github, Linkedin, Users, X, Sparkles } from 'lucide-react';
+import ThemeToggle from '../../components/common/ThemeToggle';
+
 
 const Login = () => {
     const navigate = useNavigate();
@@ -11,13 +13,18 @@ const Login = () => {
     const isAdminMode = location.pathname === '/login/admin';
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row bg-background">
+        <div className="min-h-[100dvh] flex flex-col lg:flex-row bg-background">
             
+            {/* Desktop Theme Toggle */}
+            <div className="hidden lg:block absolute top-6 right-6 z-50">
+                <ThemeToggle />
+            </div>
+
             {/* Left Side: Branding & Story (60%) */}
-            <div className="hidden md:flex md:w-[55%] lg:w-[60%] bg-surface-alt flex-col justify-between p-12 lg:p-20 relative border-r border-border-subtle overflow-hidden">
+            <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] bg-surface-alt flex-col justify-between p-12 xl:p-20 relative border-r border-border-subtle overflow-hidden">
                 {/* Decorative background grid pattern (subtle) */}
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.02]" 
-                     style={{ backgroundImage: 'linear-gradient(#1E3A8A 1px, transparent 1px), linear-gradient(90deg, #1E3A8A 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                     style={{ backgroundImage: 'linear-gradient(var(--color-primary-base) 1px, transparent 1px), linear-gradient(90deg, var(--color-primary-base) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
                 <div className="z-10">
                     <div className="flex items-center gap-3 mb-16">
@@ -30,7 +37,7 @@ const Login = () => {
                     <div className="max-w-xl">
                         <motion.h2 
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-                            className="text-4xl lg:text-5xl font-heading font-bold text-text-primary leading-tight mb-6"
+                            className="text-4xl xl:text-5xl font-heading font-bold text-text-primary leading-tight mb-6"
                         >
                             The intelligent layer <br />
                             for <span className="text-primary relative inline-block">
@@ -82,23 +89,26 @@ const Login = () => {
             </div>
 
             {/* Right Side: Portals (40%) */}
-            <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 xl:px-24 relative bg-surface">
+            <div className="w-full flex-1 lg:w-[45%] xl:w-[40%] flex flex-col px-6 py-8 sm:py-16 sm:px-12">
                 
                 {/* Mobile Header (visible only on small screens) */}
-                <div className="md:hidden flex items-center justify-between mb-12">
+                <div className="lg:hidden flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                             <BookOpen className="text-white w-5 h-5" />
                         </div>
                         <h1 className="text-xl font-heading font-bold text-text-primary">EduSync<span className="text-primary ml-0.5">AI</span></h1>
                     </div>
-                    <Link to="/founders" className="p-2 bg-surface-alt rounded-lg text-primary border border-border-subtle">
-                        <Users className="w-5 h-5" />
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <ThemeToggle />
+                        <Link to="/founders" className="p-2.5 bg-surface-alt rounded-xl text-primary border border-border-base shadow-sm">
+                            <Users className="w-5 h-5" />
+                        </Link>
+                    </div>
                 </div>
 
-                <div className="w-full max-w-md mx-auto">
-                    <h3 className="text-2xl font-bold font-heading text-text-primary mb-2">
+                <div className="flex-1 flex flex-col justify-center w-full max-w-md mx-auto">
+                    <h3 className="text-2xl sm:text-3xl font-bold font-heading text-text-primary mb-2">
                         {isAdminMode ? 'Restricted Access' : 'Access Portal'}
                     </h3>
                     <p className="text-sm text-text-secondary mb-10">
@@ -107,21 +117,21 @@ const Login = () => {
                             : 'Select your designated role to enter the workspace.'}
                     </p>
 
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                         {!isAdminMode ? (
                             <>
                                 {/* Student Portal */}
                                 <motion.div
                                     initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
                                     onClick={() => navigate('/login/student')}
-                                    className="group flex items-center p-5 bg-background border border-border-base rounded-[var(--radius-lg)] cursor-pointer transition-all hover:border-primary hover:shadow-level-2 hover:bg-surface-alt"
+                                    className="group flex items-center p-5 bg-surface border border-border-base rounded-[var(--radius-lg)] cursor-pointer transition-all hover:border-primary hover:shadow-level-2 hover:bg-surface-alt"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                    <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-5 group-hover:scale-110 transition-transform">
                                         <GraduationCap className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-base font-bold text-text-primary group-hover:text-primary transition-colors">Student Portal</h4>
-                                        <p className="text-xs text-text-secondary mt-0.5">Access adaptive tests & AI tutors</p>
+                                        <p className="text-sm text-text-secondary mt-1">Access adaptive tests & AI tutors</p>
                                     </div>
                                     <ArrowRight className="w-5 h-5 text-text-secondary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
                                 </motion.div>
@@ -130,14 +140,14 @@ const Login = () => {
                                 <motion.div
                                     initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
                                     onClick={() => navigate('/login/teacher')}
-                                    className="group flex items-center p-5 bg-background border border-border-base rounded-[var(--radius-lg)] cursor-pointer transition-all hover:border-secondary-base hover:shadow-level-2 hover:bg-surface-alt"
+                                    className="group flex items-center p-5 bg-surface border border-border-base rounded-[var(--radius-lg)] cursor-pointer transition-all hover:border-secondary-base hover:shadow-level-2 hover:bg-surface-alt"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-secondary-base/10 text-secondary-base flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                    <div className="w-12 h-12 rounded-full bg-secondary-base/10 text-secondary-base flex items-center justify-center mr-5 group-hover:scale-110 transition-transform">
                                         <BookOpen className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-base font-bold text-text-primary group-hover:text-secondary-base transition-colors">Faculty Portal</h4>
-                                        <p className="text-xs text-text-secondary mt-0.5">Manage classes & monitor risk</p>
+                                        <p className="text-sm text-text-secondary mt-1">Manage classes & monitor risk</p>
                                     </div>
                                     <ArrowRight className="w-5 h-5 text-text-secondary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-secondary-base" />
                                 </motion.div>
@@ -149,29 +159,30 @@ const Login = () => {
                                 onClick={() => navigate('/login/admin')}
                                 className="group flex items-center p-6 bg-surface-alt border-2 border-primary rounded-[var(--radius-lg)] cursor-pointer transition-all shadow-level-2"
                             >
-                                <div className="w-14 h-14 rounded-full bg-primary/20 text-primary flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <div className="w-14 h-14 rounded-full bg-primary/20 text-primary flex items-center justify-center mr-5 group-hover:scale-110 transition-transform">
                                     <Shield className="w-7 h-7" />
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="text-lg font-bold text-text-primary">System Administrator</h4>
-                                    <p className="text-sm text-text-secondary mt-0.5">Full architecture control enabled</p>
+                                    <p className="text-sm text-text-secondary mt-1">Full architecture control enabled</p>
                                 </div>
-                                <ArrowRight className="w-6 h-6 text-primary" />
+                                <ArrowRight className="w-6 h-6 text-primary ml-2" />
                             </motion.div>
                         )}
                     </div>
+                </div>
 
-                    <div className="mt-12 pt-8 border-t border-border-subtle text-center">
-                        <p className="text-xs text-text-secondary mb-4">Protected by EduSync SecurAuth™</p>
-                        {isAdminMode && (
-                            <button 
-                                onClick={() => navigate('/login')}
-                                className="text-xs font-bold text-primary hover:underline"
-                            >
-                                Return to standard portal
-                            </button>
-                        )}
-                    </div>
+                {/* Footer pinned to bottom on mobile */}
+                <div className="mt-8 pt-6 border-t border-border-subtle text-center w-full max-w-md mx-auto pb-safe">
+                    <p className="text-xs text-text-secondary mb-2">Protected by EduSync SecurAuth™</p>
+                    {isAdminMode && (
+                        <button 
+                            onClick={() => navigate('/login')}
+                            className="text-sm font-bold text-primary hover:underline"
+                        >
+                            Return to standard portal
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

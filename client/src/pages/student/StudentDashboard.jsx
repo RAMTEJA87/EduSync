@@ -135,7 +135,7 @@ const StudentDashboard = () => {
                     </h1>
                     <p className="text-text-secondary mt-2 text-lg">Ready to improve today?</p>
                 </div>
-                <div className="flex items-center gap-3">
+                 <div className="flex items-center gap-3">
                     <NotificationBell />
                     <button onClick={handleLogout} className="p-2.5 rounded-xl border border-border-base text-text-secondary hover:bg-surface-alt hover:text-danger transition-colors">
                         <LogOut className="w-5 h-5" />
@@ -208,14 +208,14 @@ const StudentDashboard = () => {
                                 <AreaChart data={progressionData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--color-primary-base)" stopOpacity={0.15} />
+                                            <stop offset="5%" stopColor="var(--color-primary-base)" stopOpacity={0.25} />
                                             <stop offset="95%" stopColor="var(--color-primary-base)" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <XAxis dataKey="name" stroke="var(--color-text-secondary)" tick={{ fill: 'var(--color-text-secondary)' }} fontSize={11} tickLine={false} axisLine={false} dy={10} />
+                                    <XAxis dataKey="name" stroke="var(--color-text-secondary)" tick={{ fill: 'var(--color-text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} dy={10} minTickGap={20} />
                                     <YAxis hide domain={[0, 100]} />
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: 'var(--color-surface-base)', borderColor: 'var(--color-border-base)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-level2)', padding: '8px 12px' }}
+                                        contentStyle={{ backgroundColor: 'var(--color-surface-base)', borderColor: 'var(--color-border-base)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-level2)', padding: '8px 12px', fontSize: '12px' }}
                                         itemStyle={{ color: 'var(--color-primary-base)', fontWeight: 'bold' }}
                                     />
                                     <Area type="monotone" dataKey="score" stroke="var(--color-primary-base)" strokeWidth={3} fill="url(#colorScore)" activeDot={{ r: 6, fill: 'var(--color-primary-base)', stroke: 'var(--color-surface-base)', strokeWidth: 2 }} />
@@ -241,16 +241,15 @@ const StudentDashboard = () => {
                                     </div>
                                 ) : (
                                     availableQuizzes.map((quiz, i) => (
-                                        <div key={quiz._id} onClick={() => navigate(`/student/quiz/${quiz._id}`)} className="group p-4 bg-surface border border-border-base rounded-[var(--radius-lg)] hover:border-primary hover:shadow-level1 cursor-pointer transition-all flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-white transition-colors text-primary">
-                                                <Play className="w-4 h-4 ml-0.5" />
+                                        <div key={quiz._id} onClick={() => navigate(`/student/quiz/${quiz._id}`)} className="group p-5 bg-surface border border-border-base rounded-[var(--radius-lg)] hover:border-primary hover:shadow-level1 cursor-pointer transition-all flex items-center gap-4 min-h-[80px]">
+                                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors text-primary">
+                                                <Play className="w-5 h-5 ml-1" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="text-sm font-bold text-text-primary truncate">{quiz.title}</h4>
-                                                <div className="flex items-center gap-3 mt-1 text-xs text-text-secondary">
-                                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> ~15 mins</span>
-                                                    <span>•</span>
-                                                    <span className={quiz.baseDifficulty === 'HARD' ? 'text-danger' : quiz.baseDifficulty === 'MEDIUM' ? 'text-warning' : 'text-success'}>
+                                                <h4 className="text-base font-bold text-text-primary truncate">{quiz.title}</h4>
+                                                <div className="flex items-center gap-3 mt-1.5 text-xs text-text-secondary font-medium">
+                                                    <span className="flex items-center gap-1 bg-surface-alt px-2 py-1 rounded-md"><Clock className="w-3 h-3"/> ~15 mins</span>
+                                                    <span className={`px-2 py-1 rounded-md ${quiz.baseDifficulty === 'HARD' ? 'bg-danger/10 text-danger' : quiz.baseDifficulty === 'MEDIUM' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'}`}>
                                                         {quiz.baseDifficulty || 'Mixed'}
                                                     </span>
                                                 </div>
@@ -338,33 +337,33 @@ const StudentDashboard = () => {
                     <div>
                         <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3 px-1">AI Tool Launcher</h3>
                         <div className="space-y-3">
-                            <button onClick={() => navigate('/student/doubt-solver')} className="w-full text-left group p-4 bg-surface border border-border-base hover:border-primary rounded-[var(--radius-lg)] transition-all shadow-sm hover:shadow-level1 flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <MessageSquare className="w-5 h-5" />
+                            <button onClick={() => navigate('/student/doubt-solver')} className="w-full text-left group p-5 bg-surface border border-border-base hover:border-primary rounded-[var(--radius-lg)] transition-all shadow-sm hover:shadow-level1 flex items-center gap-4 min-h-[72px]">
+                                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <MessageSquare className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-text-primary">Doubt Solver</h4>
-                                    <p className="text-xs text-text-secondary mt-0.5">24/7 Contextual Tutor</p>
+                                    <h4 className="text-base font-bold text-text-primary">Doubt Solver</h4>
+                                    <p className="text-sm text-text-secondary mt-0.5">24/7 Contextual Tutor</p>
                                 </div>
                             </button>
 
-                            <button onClick={() => navigate('/student/youtube')} className="w-full text-left group p-4 bg-surface border border-border-base hover:border-danger rounded-[var(--radius-lg)] transition-all shadow-sm hover:shadow-level1 flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-danger/10 text-danger flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Video className="w-5 h-5" />
+                            <button onClick={() => navigate('/student/youtube')} className="w-full text-left group p-5 bg-surface border border-border-base hover:border-danger rounded-[var(--radius-lg)] transition-all shadow-sm hover:shadow-level1 flex items-center gap-4 min-h-[72px]">
+                                <div className="w-12 h-12 rounded-xl bg-danger/10 text-danger flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Video className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-text-primary">YouTube AI</h4>
-                                    <p className="text-xs text-text-secondary mt-0.5">Summarize & Test Videos</p>
+                                    <h4 className="text-base font-bold text-text-primary">YouTube AI</h4>
+                                    <p className="text-sm text-text-secondary mt-0.5">Summarize & Test Videos</p>
                                 </div>
                             </button>
 
-                            <button onClick={() => navigate('/student/smart-revision')} className="w-full text-left group p-4 bg-surface border border-border-base hover:border-accent rounded-[var(--radius-lg)] transition-all shadow-sm hover:shadow-level1 flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Sparkles className="w-5 h-5" />
+                            <button onClick={() => navigate('/student/smart-revision')} className="w-full text-left group p-5 bg-surface border border-border-base hover:border-accent rounded-[var(--radius-lg)] transition-all shadow-sm hover:shadow-level1 flex items-center gap-4 min-h-[72px]">
+                                <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Sparkles className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-text-primary">Smart Revision</h4>
-                                    <p className="text-xs text-text-secondary mt-0.5">Generate Study Plans</p>
+                                    <h4 className="text-base font-bold text-text-primary">Smart Revision</h4>
+                                    <p className="text-sm text-text-secondary mt-0.5">Generate Study Plans</p>
                                 </div>
                             </button>
                         </div>

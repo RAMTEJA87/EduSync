@@ -139,7 +139,7 @@ const SmartRevision = () => {
 
   return (
     <div
-      className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6 min-h-screen print:p-2 print:max-w-full"
+      className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6 min-h-screen pb-24 pb-safe print:p-2 print:max-w-full"
       style={{ fontFamily: "'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Tamil', sans-serif" }}
     >
       <div className="print:hidden">
@@ -155,13 +155,13 @@ const SmartRevision = () => {
           </h1>
           <p className="text-text-secondary text-sm">Personalized 7-day revision plan based on your weak areas and quiz performance.</p>
         </div>
-        <div className="flex items-center gap-3 print:hidden">
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
           {/* Language Selector */}
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="appearance-none bg-background border border-border-base rounded-xl px-3 py-2 pr-9 text-sm text-text-primary focus:outline-none focus:border-primary cursor-pointer"
+              className="appearance-none w-full bg-background border border-border-base rounded-xl px-3 py-2 pr-9 text-sm text-text-primary focus:outline-none focus:border-primary cursor-pointer"
             >
               {LANGUAGES.map(lang => (
                 <option key={lang} value={lang}>{lang}</option>
@@ -174,7 +174,7 @@ const SmartRevision = () => {
           <button
             onClick={handlePrint}
             disabled={!plan}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-text-primary border border-border-base rounded-xl transition-colors disabled:opacity-50"
+            className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-text-primary border border-border-base rounded-xl transition-colors disabled:opacity-50"
           >
             <Printer className="w-4 h-4" /> Print
           </button>
@@ -183,7 +183,7 @@ const SmartRevision = () => {
           <button
             onClick={generatePlan}
             disabled={isGenerating}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white font-bold rounded-xl transition-colors text-sm"
+            className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white font-bold rounded-xl transition-colors text-sm w-full sm:w-auto mt-2 sm:mt-0"
           >
             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             {isGenerating ? 'Generating...' : 'Generate'}

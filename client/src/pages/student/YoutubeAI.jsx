@@ -182,7 +182,7 @@ const YoutubeAI = () => {
   };
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 min-h-screen" style={{ fontFamily: "'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Tamil', sans-serif" }}>
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 min-h-screen pb-24 pb-safe" style={{ fontFamily: "'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Tamil', sans-serif" }}>
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-4">
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </button>
@@ -212,11 +212,11 @@ const YoutubeAI = () => {
             </div>
 
             {/* Language Selector */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="appearance-none bg-background border border-border-base rounded-lg px-4 py-3 pr-10 text-text-primary focus:outline-none focus:border-danger/50 text-sm cursor-pointer min-w-[140px]"
+                className="appearance-none w-full bg-background border border-border-base rounded-lg px-4 py-3 pr-10 text-text-primary focus:outline-none focus:border-danger/50 text-sm cursor-pointer min-w-[140px]"
               >
                 {LANGUAGES.map(lang => (
                   <option key={lang} value={lang}>{lang}</option>
@@ -226,11 +226,11 @@ const YoutubeAI = () => {
             </div>
 
             {/* Note Size Selector */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={noteSize}
                 onChange={(e) => setNoteSize(e.target.value)}
-                className="appearance-none bg-background border border-border-base rounded-lg px-4 py-3 pr-10 text-text-primary focus:outline-none focus:border-danger/50 text-sm cursor-pointer min-w-[130px]"
+                className="appearance-none w-full bg-background border border-border-base rounded-lg px-4 py-3 pr-10 text-text-primary focus:outline-none focus:border-danger/50 text-sm cursor-pointer min-w-[130px]"
               >
                 {NOTE_SIZES.map(size => (
                   <option key={size} value={size}>{size}</option>
@@ -242,7 +242,7 @@ const YoutubeAI = () => {
             <button
               type="submit"
               disabled={isProcessing}
-              className="px-6 py-3 bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg min-w-[140px]"
+              className="px-6 py-3 w-full sm:w-auto bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg min-w-[140px]"
             >
               {isProcessing ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>

@@ -394,7 +394,7 @@ const QuizAttempt = () => {
     const currentQ = quizData.questions[currentIdx];
 
     return (
-        <div className="p-8 max-w-4xl mx-auto min-h-screen relative select-none">
+        <div className="min-h-screen bg-background flex flex-col relative select-none overflow-hidden pb-24 md:pb-8">
             {/* Violation Toast */}
             <AnimatePresence>
                 {toastVisible && (
@@ -402,10 +402,10 @@ const QuizAttempt = () => {
                         initial={{ y: -80, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -80, opacity: 0 }}
-                        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-warning/90 text-black px-6 py-3 rounded-xl shadow-xl backdrop-blur-sm border border-warning/50 flex items-center gap-3 max-w-lg"
+                        className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-warning/90 text-black px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm border border-warning/50 flex items-center gap-3 w-[90%] max-w-md"
                     >
                         <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-sm font-medium">{toastMsg}</span>
+                        <span className="text-sm font-medium leading-tight">{toastMsg}</span>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -417,93 +417,111 @@ const QuizAttempt = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+                        className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
+                            initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-surface-base border-2 border-danger rounded-2xl p-8 max-w-md w-full text-center space-y-4 shadow-2xl"
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-surface border-2 border-danger rounded-2xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl"
                         >
-                            <div className="w-16 h-16 mx-auto rounded-full bg-danger/20 flex items-center justify-center">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-danger/20 flex items-center justify-center mb-4">
                                 <ShieldAlert className="w-8 h-8 text-danger" />
                             </div>
-                            <h3 className="text-xl font-heading font-bold text-danger">Final Warning</h3>
-                            <p className="text-sm text-text-secondary">{warningMessage}</p>
+                            <h3 className="text-xl font-heading font-bold text-danger mb-2">Final Warning</h3>
+                            <p className="text-sm text-text-secondary mb-6 leading-relaxed">{warningMessage}</p>
                             <button
                                 onClick={() => setWarningType(null)}
-                                className="w-full px-6 py-3 bg-danger text-white rounded-xl font-semibold hover:bg-danger/80 transition-colors"
+                                className="w-full px-6 py-4 bg-danger text-white rounded-xl font-bold hover:bg-danger/90 active:scale-[0.98] transition-all"
                             >
-                                I Understand — Continue Quiz
+                                I Understand — Continue
                             </button>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8 relative z-10">
-                <div>
-                    <h1 className="text-2xl font-heading font-bold text-text-primary max-w-xl truncate">{quizData.title}</h1>
-                    <p className="text-text-secondary text-sm">Question {currentIdx + 1} of {quizData.questions.length}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                    {violationCount > 0 && (
-                        <div className="flex items-center gap-1.5 text-danger text-xs font-medium bg-danger/10 px-3 py-1.5 rounded-lg border border-danger/20">
-                            <ShieldAlert className="w-3.5 h-3.5" />
-                            {violationCount}/{violationThreshold}
+            {/* Sticky Mobile/Desktop Header */}
+            <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border-subtle p-4 md:px-8 md:py-6 shadow-sm">
+                <div className="max-w-4xl mx-auto flex justify-between items-center gap-4">
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-lg md:text-2xl font-heading font-bold text-text-primary truncate">{quizData.title}</h1>
+                        <p className="text-text-secondary text-xs md:text-sm font-medium mt-0.5">Question {currentIdx + 1} of {quizData.questions.length}</p>
+                    </div>
+                    <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                        {violationCount > 0 && (
+                            <div className="flex items-center gap-1 text-danger text-xs font-bold bg-danger/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-danger/20">
+                                <ShieldAlert className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{violationCount}/{violationThreshold}</span>
+                            </div>
+                        )}
+                        <div className={`flex items-center gap-1.5 md:gap-2 font-mono text-sm md:text-xl px-3 py-1.5 md:px-4 md:py-2 rounded-xl backdrop-blur-md border transition-colors ${timeLeft < 60 ? 'bg-danger/10 text-danger border-danger/20 animate-pulse' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                            <Clock className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="font-bold">{formatTime(timeLeft)}</span>
                         </div>
-                    )}
-                    <div className="flex items-center gap-2 text-primary font-mono text-xl bg-primary/10 px-4 py-2 rounded-xl backdrop-blur-md border border-primary/20">
-                        <Clock className="w-5 h-5" />
-                        {formatTime(timeLeft)}
                     </div>
                 </div>
             </div>
 
-            {/* Question */}
-            <motion.div
-                key={currentIdx}
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="relative z-10"
-            >
-                <Card className="mb-6 relative overflow-hidden bg-surface-base">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
-                    <h3 className="text-xl text-text-primary font-medium mb-8 leading-relaxed relative z-10">
-                        {currentQ.questionText}
-                    </h3>
-                    <div className="space-y-4 relative z-10">
-                        {currentQ.options.map((opt, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setSelectedOpt(opt)}
-                                className={`w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4 ${selectedOpt === opt
-                                    ? 'border-primary bg-primary/10 text-primary shadow-lg'
-                                    : 'border-border-base bg-surface-alt text-text-secondary hover:border-primary/50 hover:bg-surface-hover'
-                                    }`}
-                            >
-                                <div className={`w-6 h-6 rounded-full border flex flex-shrink-0 items-center justify-center text-xs font-bold transition-colors ${selectedOpt === opt ? 'border-primary bg-primary text-white' : 'border-border-base text-text-secondary'}`}>
-                                    {String.fromCharCode(65 + i)}
-                                </div>
-                                <span>{opt}</span>
-                            </button>
-                        ))}
-                    </div>
-                </Card>
-
-                <div className="flex justify-end mt-8">
-                    <button
-                        onClick={handleNext}
-                        disabled={!selectedOpt || submitting}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-text-inverse rounded-xl font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            {/* Question Content */}
+            <div className="flex-1 overflow-y-auto px-4 py-6 md:p-8">
+                <div className="max-w-4xl mx-auto">
+                    <motion.div
+                        key={currentIdx}
+                        initial={{ x: 20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="relative z-10 pb-20 md:pb-0" // Add padding bottom for mobile sticky button
                     >
-                        {submitting ? 'Evaluating...' : currentIdx === quizData.questions.length - 1 ? 'Submit Assignment' : 'Next Question'}
-                        {!submitting && <ArrowRight className="w-4 h-4" />}
-                    </button>
+                        <div className="mb-6 relative overflow-hidden bg-surface rounded-[var(--radius-xl)] border border-border-base p-5 md:p-8 shadow-sm">
+                            <h3 className="text-lg md:text-xl text-text-primary font-bold mb-6 md:mb-8 leading-relaxed relative z-10">
+                                {currentQ.questionText}
+                            </h3>
+                            <div className="flex flex-col gap-3 md:gap-4 relative z-10">
+                                {currentQ.options.map((opt, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setSelectedOpt(opt)}
+                                        className={`w-full text-left p-4 md:p-5 rounded-xl border-2 transition-all flex items-start gap-4 min-h-[64px] ${selectedOpt === opt
+                                            ? 'border-primary bg-primary/5 text-primary shadow-[0_4px_12px_rgba(var(--color-primary-base-rgb),0.15)] transform scale-[1.01]'
+                                            : 'border-border-base bg-surface-alt text-text-secondary hover:border-primary/40 hover:bg-surface active:scale-[0.99]'
+                                            }`}
+                                    >
+                                        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full border-2 flex flex-shrink-0 items-center justify-center text-sm md:text-base font-bold transition-colors mt-0.5 ${selectedOpt === opt ? 'border-primary bg-primary text-white' : 'border-border-subtle text-text-muted bg-surface'}`}>
+                                            {String.fromCharCode(65 + i)}
+                                        </div>
+                                        <span className={`text-sm md:text-base leading-relaxed ${selectedOpt === opt ? 'font-semibold text-text-primary' : 'font-medium text-text-secondary'}`}>{opt}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Desktop Next Button */}
+                        <div className="hidden md:flex justify-end mt-8">
+                            <button
+                                onClick={handleNext}
+                                disabled={!selectedOpt || submitting}
+                                className={`px-8 py-4 rounded-xl flex items-center gap-3 font-bold text-lg transition-all shadow-level2 ${!selectedOpt || submitting ? 'bg-surface-alt text-text-muted cursor-not-allowed border border-border-base' : 'bg-primary text-white hover:bg-primary-hover hover:scale-[1.02]'}`}
+                            >
+                                <span>{submitting ? 'Processing...' : (currentIdx === quizData.questions.length - 1 ? 'Submit Assessment' : 'Confirm & Next')}</span>
+                                {!submitting && (currentIdx === quizData.questions.length - 1 ? <CheckCircle className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />)}
+                            </button>
+                        </div>
+                    </motion.div>
                 </div>
-            </motion.div>
+            </div>
+
+            {/* Mobile Sticky Next Button */}
+            <div className="md:hidden fixed bottom-0 left-0 w-full p-4 bg-background/90 backdrop-blur-md border-t border-border-subtle z-40 pb-safe">
+                <button
+                    onClick={handleNext}
+                    disabled={!selectedOpt || submitting}
+                    className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-base transition-all shadow-lg active:scale-[0.98] ${!selectedOpt || submitting ? 'bg-surface-alt text-text-muted cursor-not-allowed border border-border-base' : 'bg-primary text-white'}`}
+                >
+                    <span>{submitting ? 'Processing...' : (currentIdx === quizData.questions.length - 1 ? 'Submit Assessment' : 'Confirm & Next')}</span>
+                    {!submitting && (currentIdx === quizData.questions.length - 1 ? <CheckCircle className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />)}
+                </button>
+            </div>
         </div>
     );
 };

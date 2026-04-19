@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Mail, Lock, ArrowLeft, BookOpen, Sparkles, LineChart, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, LineChart, ArrowLeft } from 'lucide-react';
+import Card from '../../components/common/Card';
 import api from '../../api/axios';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import Card from '../../components/common/Card';
+import ThemeToggle from '../../components/common/ThemeToggle';
 
 const TeacherLogin = () => {
     const navigate = useNavigate();
@@ -33,7 +34,10 @@ const TeacherLogin = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 relative">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-background py-12 px-4 relative">
+            <div className="absolute top-6 right-6 z-50">
+                <ThemeToggle />
+            </div>
             {/* Decorative Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div>
