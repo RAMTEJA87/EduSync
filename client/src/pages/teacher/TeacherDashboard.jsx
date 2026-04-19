@@ -375,7 +375,8 @@ const TeacherDashboard = () => {
                             {!analytics.highRiskStudents?.length ? (
                                 <p className="text-success text-sm p-5 text-center font-medium">All students are currently on track.</p>
                             ) : (
-                                <table className="w-full text-left text-sm">
+                                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                                    <table className="w-full text-left text-sm min-w-[600px]">
                                     <thead className="bg-surface-alt border-b border-border-base">
                                         <tr>
                                             <th className="px-5 py-3 font-medium text-text-secondary">Student</th>
@@ -394,7 +395,8 @@ const TeacherDashboard = () => {
                                             </tr>
                                         ))}
                                     </tbody>
-                                </table>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </Card>
@@ -677,7 +679,7 @@ const TeacherDashboard = () => {
                                         <ChevronDown className="w-4 h-4 text-text-muted absolute right-4 top-3.5 pointer-events-none" />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-text-secondary mb-1.5">Difficulty</label>
                                         <div className="relative">

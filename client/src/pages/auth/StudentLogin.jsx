@@ -5,7 +5,7 @@ import { Mail, Lock, LogIn, User, Sparkles, GraduationCap } from 'lucide-react';
 import api from '../../api/axios';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import Card from '../../components/common/Card';
+import ThemeToggle from '../../components/common/ThemeToggle';
 
 const StudentLogin = () => {
     const navigate = useNavigate();
@@ -47,7 +47,10 @@ const StudentLogin = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background md:bg-surface-alt py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-background md:bg-surface-alt py-12 px-4 sm:px-6 lg:px-8 relative">
+            <div className="absolute top-6 right-6 z-50">
+                <ThemeToggle />
+            </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-4xl grid md:grid-cols-2 bg-surface rounded-[var(--radius-xl)] shadow-level3 overflow-hidden border border-border-subtle">
                 <div className="bg-surface-alt p-12 text-text-primary flex flex-col justify-center relative overflow-hidden hidden md:flex border-r border-border-subtle">
                     <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-secondary/10 opacity-50 blur-3xl"></div>

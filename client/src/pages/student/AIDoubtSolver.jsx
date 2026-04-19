@@ -246,7 +246,7 @@ const AIDoubtSolver = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-background overflow-hidden">
       {/* ═══ HEADER ═══ */}
       <div className="flex-shrink-0 bg-surface border-b border-border-base sticky top-0 z-10 shadow-sm">
         <div className="px-4 sm:px-6 md:px-8 py-4">
@@ -361,15 +361,15 @@ const AIDoubtSolver = () => {
 
                   {/* Message Bubble */}
                   <div
-                    className={`max-w-xs sm:max-w-md md:max-w-xl flex-1 ${msg.type === 'user' ? 'text-right' : ''}`}
+                    className={`max-w-[85%] md:max-w-[75%] flex flex-col ${msg.type === 'user' ? 'items-end' : 'items-start'}`}
                   >
                     <div
-                      className={`inline-block px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm leading-relaxed break-words transition-all ${
+                      className={`inline-block px-4 py-3 sm:px-5 sm:py-3 rounded-2xl text-sm md:text-base leading-relaxed break-words transition-all shadow-sm ${
                         msg.type === 'ai'
                           ? msg.isError
                             ? 'bg-danger/10 text-danger rounded-bl-none border border-danger/20'
-                            : 'bg-surface-alt text-text-primary rounded-bl-none border border-border-base shadow-sm'
-                          : 'bg-primary text-white rounded-br-none shadow-sm'
+                            : 'bg-surface border border-border-base text-text-primary rounded-bl-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
+                          : 'bg-primary text-white rounded-br-none shadow-[0_2px_8px_rgba(var(--color-primary-base-rgb),0.2)]'
                       }`}
                     >
                       {msg.data ? <AIResponseCard data={msg.data} /> : <p className="whitespace-pre-wrap">{msg.text}</p>}

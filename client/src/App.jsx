@@ -14,14 +14,12 @@ import AIDoubtSolver from './pages/student/AIDoubtSolver';
 import SmartRevision from './pages/student/SmartRevision';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { ThemeProvider } from './contexts/ThemeContext';
-import ThemeToggle from './components/common/ThemeToggle';
 
 function App() {
   return (
     <ThemeProvider>
       <Router>
         <div className="min-h-screen bg-background text-text-primary font-body antialiased transition-colors duration-300">
-          <ThemeToggle />
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />

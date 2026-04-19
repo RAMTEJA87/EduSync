@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, LogIn, ShieldCheck, ArrowLeft } from 'lucide-react';
 import api from '../../api/axios';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import ThemeToggle from '../../components/common/ThemeToggle';
 
 const AdminLogin = () => {
     const navigate = useNavigate();
@@ -32,7 +33,10 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-surface-alt py-12 px-4 relative overflow-hidden">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-surface-alt py-12 px-4 relative overflow-hidden">
+            <div className="absolute top-6 right-6 z-50">
+                <ThemeToggle />
+            </div>
             {/* Structured/Geometrical Background Elements */}
             <div className="absolute top-0 w-full h-1 bg-accent"></div>
             <div className="absolute top-1/2 left-0 w-full h-[1px] bg-border-base -z-10"></div>

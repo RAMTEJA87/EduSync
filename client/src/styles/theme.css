@@ -1,16 +1,16 @@
 /* client/src/styles/theme.css */
 :root {
-  /* Semantic Color System - Deep Academic Blue & Soft Neutrals */
+  /* Semantic Color System - Deep Maroon & Warm Neutrals */
 
-  /* Primary: Deep Academic Blue */
-  --color-primary-base: #1E3A8A; /* Slate-800 to Indigo-900 space */
-  --color-primary-hover: #172554;
-  --color-primary-light: #3B82F6;
+  /* Primary: Deep Academic Maroon */
+  --color-primary-base: #881337; /* Rose 900 */
+  --color-primary-hover: #4C0519; /* Rose 950 */
+  --color-primary-light: #E11D48; /* Rose 600 */
 
-  /* Secondary: Soft Neutral Muted Blue */
-  --color-secondary-base: #64748B;
-  --color-secondary-hover: #475569;
-  --color-secondary-light: #94A3B8;
+  /* Secondary: Warm Stone */
+  --color-secondary-base: #57534E; /* Stone 600 */
+  --color-secondary-hover: #44403C; /* Stone 700 */
+  --color-secondary-light: #A8A29E; /* Stone 400 */
 
   /* Accent: Warm Gold/Yellow */
   --color-accent-base: #D97706; /* Amber-600 */
@@ -25,21 +25,23 @@
   --color-warning-light: #F59E0B;
 
   --color-danger-base: #DC2626; /* Red-600 */
+  --color-danger-hover: #B91C1C; /* Red-700 */
   --color-danger-light: #EF4444; /* Red-500 */
 
-  /* Neutrals & Surfaces - Soft, breathy, non-clinical */
-  --color-bg-base: #F1F5F9; /* Slate-100 - slightly deeper for better contrast in light mode */
+  /* Neutrals & Surfaces - Warm Stone */
+  --color-bg-base: #F5F5F4; /* Stone 100 */
   --color-surface-base: #FFFFFF; /* Pure White */
-  --color-surface-alt: #E2E8F0; /* Slate-200 */
-  --color-surface-hover: #CBD5E1; /* Slate-300 */
+  --color-surface-alt: #E7E5E4; /* Stone 200 */
+  --color-surface-hover: #D6D3D1; /* Stone 300 */
   
-  --color-border-subtle: #E2E8F0;
-  --color-border-base: #CBD5E1; /* Slightly stronger border for light mode */
-  --color-focus-ring: rgba(30, 58, 138, 0.4); /* Based on Primary */
+  --color-border-subtle: #E7E5E4;
+  --color-border-base: #D6D3D1; 
+  --color-focus-ring: rgba(136, 19, 55, 0.4); /* Based on Rose 900 */
 
   /* Text Colors - High Contrast, Calming */
-  --color-text-primary: #0F172A; /* Slate-900 */
-  --color-text-secondary: #475569; /* Slate-600 */
+  --color-text-primary: #1C1917; /* Stone 900 */
+  --color-text-secondary: #57534E; /* Stone 600 */
+  --color-text-muted: #A8A29E; /* Stone 400 */
   --color-text-inverse: #FFFFFF;
 
   /* Typography Base Values - Clean Hierarchy */
@@ -48,9 +50,9 @@
   --font-family-mono: 'IBM Plex Mono', monospace;
 
   /* Subtle, Natural Shadows - No glow */
-  --shadow-level-1: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-level-2: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --shadow-level-3: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  --shadow-level-1: 0 1px 2px 0 rgba(28, 25, 23, 0.05);
+  --shadow-level-2: 0 4px 6px -1px rgba(28, 25, 23, 0.05), 0 2px 4px -2px rgba(28, 25, 23, 0.05);
+  --shadow-level-3: 0 10px 15px -3px rgba(28, 25, 23, 0.05), 0 4px 6px -4px rgba(28, 25, 23, 0.05);
 
   /* Border Radii - Structured, slightly soft but not bubbly */
   --radius-sm: 6px;
@@ -69,13 +71,13 @@
 
 /* Dark Theme Overrides - Deep, Rich, No Neon */
 .dark {
-  /* Keep deep academic blue, slightly lighter for contrast */
-  --color-primary-base: #3B82F6;
-  --color-primary-hover: #2563EB;
-  --color-primary-light: #60A5FA;
+  /* Maroon for dark mode - slightly lighter for contrast */
+  --color-primary-base: #E11D48; /* Rose 600 */
+  --color-primary-hover: #F43F5E; /* Rose 500 */
+  --color-primary-light: #FDA4AF; /* Rose 300 */
 
-  --color-secondary-base: #94A3B8;
-  --color-secondary-light: #CBD5E1;
+  --color-secondary-base: #A8A29E; /* Stone 400 */
+  --color-secondary-light: #D6D3D1; /* Stone 300 */
 
   --color-accent-base: #F59E0B;
   --color-accent-light: #FCD34D;
@@ -84,15 +86,16 @@
   --color-success-base: #10B981;
   --color-warning-base: #F59E0B;
   --color-danger-base: #EF4444;
+  --color-danger-hover: #DC2626;
 
-  /* Deep Ink/Slate Backgrounds - Less saturated than before */
-  --color-bg-base: #0B1120; /* Very deep slate */
-  --color-surface-base: #131E32; /* Slightly elevated */
-  --color-surface-alt: #1E293B; /* Slate 800 */
-  --color-surface-hover: #334155; /* Slate 700 */
+  /* Deep Stone Backgrounds */
+  --color-bg-base: #0C0A09; /* Stone 950 */
+  --color-surface-base: #1C1917; /* Stone 900 */
+  --color-surface-alt: #292524; /* Stone 800 */
+  --color-surface-hover: #44403C; /* Stone 700 */
 
-  --color-border-subtle: #1E293B;
-  --color-border-base: #334155;
+  --color-border-subtle: #292524; /* Stone 800 */
+  --color-border-base: #44403C; /* Stone 700 */
 
   /* Shadow logic for dark mode - pure opacity based */
   --shadow-level-1: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
@@ -100,7 +103,8 @@
   --shadow-level-3: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
 
   /* Text Colors for Dark Mode */
-  --color-text-primary: #F8FAFC; /* Slate 50 */
-  --color-text-secondary: #94A3B8; /* Slate 400 */
-  --color-text-inverse: #0B1120;
+  --color-text-primary: #FAFAF9; /* Stone 50 */
+  --color-text-secondary: #D6D3D1; /* Stone 300 */
+  --color-text-muted: #78716C; /* Stone 500 */
+  --color-text-inverse: #0C0A09;
 }
